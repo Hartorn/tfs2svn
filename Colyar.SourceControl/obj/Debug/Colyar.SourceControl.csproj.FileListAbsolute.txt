@@ -2,3 +2,7 @@ C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl\bin\Debug\Colyar.
 C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl\bin\Debug\Colyar.SourceControl.pdb
 C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl\obj\Debug\Colyar.SourceControl.dll
 C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl\obj\Debug\Colyar.SourceControl.pdb
+D:\tfs2svnReloaded\tfs2svn\Colyar.SourceControl\bin\Debug\Colyar.SourceControl.dll
+D:\tfs2svnReloaded\tfs2svn\Colyar.SourceControl\bin\Debug\Colyar.SourceControl.pdb
+D:\tfs2svnReloaded\tfs2svn\Colyar.SourceControl\obj\Debug\Colyar.SourceControl.dll
+D:\tfs2svnReloaded\tfs2svn\Colyar.SourceControl\obj\Debug\Colyar.SourceControl.pdb
