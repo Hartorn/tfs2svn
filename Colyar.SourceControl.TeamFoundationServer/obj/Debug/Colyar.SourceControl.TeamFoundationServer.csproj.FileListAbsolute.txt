@@ -1,0 +1,7 @@
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl.TeamFoundationServer\bin\Debug\Colyar.SourceControl.TeamFoundationServer.dll
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl.TeamFoundationServer\bin\Debug\Colyar.SourceControl.TeamFoundationServer.pdb
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl.TeamFoundationServer\bin\Debug\Colyar.SourceControl.dll
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl.TeamFoundationServer\bin\Debug\Colyar.SourceControl.pdb
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl.TeamFoundationServer\obj\Debug\Colyar.SourceControl.TeamFoundationServer.csprojResolveAssemblyReference.cache
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl.TeamFoundationServer\obj\Debug\Colyar.SourceControl.TeamFoundationServer.dll
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl.TeamFoundationServer\obj\Debug\Colyar.SourceControl.TeamFoundationServer.pdb

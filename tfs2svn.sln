@@ -1,5 +1,7 @@
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Colyar.SourceControl", "Colyar.SourceControl\Colyar.SourceControl.csproj", "{46B5216D-37A6-4B2C-9333-D591EFB4C08E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Colyar.SourceControl.Subversion", "Colyar.SourceControl.Subversion\Colyar.SourceControl.Subversion.csproj", "{AD47F42D-1D9D-4C1A-B216-B82E652DEC5E}"
@@ -15,8 +17,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Colyar.Utils", "Colyar.Utils\Colyar.Utils.csproj", "{D1DDEB77-290A-4525-9A83-CA8FBD472F4C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Colyar.SourceControl.MicrosoftTfsClient", "Colyar.SourceControl.MicrosoftTfsClient\Colyar.SourceControl.MicrosoftTfsClient.csproj", "{6A457FA8-2A9F-41C4-B45C-D98DAE10BDA6}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Colyar.SourceControl.OpenTfsClient", "Colyar.SourceControl.OpenTfsClient\Colyar.SourceControl.OpenTfsClient.csproj", "{D0D426BC-A098-422D-BB13-22D82088A74A}"
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "tfs2svn.Setup", "tfs2svn.Setup\tfs2svn.Setup.vdproj", "{7A3B2809-11FE-40DB-B5A9-03DAECB84D4A}"
 EndProject
@@ -58,10 +58,6 @@ Global
 		{6A457FA8-2A9F-41C4-B45C-D98DAE10BDA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6A457FA8-2A9F-41C4-B45C-D98DAE10BDA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6A457FA8-2A9F-41C4-B45C-D98DAE10BDA6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D0D426BC-A098-422D-BB13-22D82088A74A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D0D426BC-A098-422D-BB13-22D82088A74A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D0D426BC-A098-422D-BB13-22D82088A74A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D0D426BC-A098-422D-BB13-22D82088A74A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7A3B2809-11FE-40DB-B5A9-03DAECB84D4A}.Debug|Any CPU.ActiveCfg = Debug
 		{7A3B2809-11FE-40DB-B5A9-03DAECB84D4A}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection

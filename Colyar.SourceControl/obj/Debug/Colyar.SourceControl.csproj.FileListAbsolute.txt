@@ -1,0 +1,4 @@
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl\bin\Debug\Colyar.SourceControl.dll
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl\bin\Debug\Colyar.SourceControl.pdb
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl\obj\Debug\Colyar.SourceControl.dll
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl\obj\Debug\Colyar.SourceControl.pdb

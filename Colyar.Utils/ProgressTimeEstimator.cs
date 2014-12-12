@@ -7,9 +7,9 @@ namespace Colyar.Utils
     public class ProgressTimeEstimator
     {
         private DateTime _startTime;
-        private DateTime _lastTimeMark;
+        //private DateTime _lastTimeMark;
         private int _updateCount;
-        private int _updatesRemaining;
+        //private int _updatesRemaining;
         private int _totalUpdates;
 
         public ProgressTimeEstimator(DateTime startTime, int totalUpdates)

@@ -27,6 +27,7 @@ namespace tfs2svn.Winforms
 
             //load initial settings
             tbTFSUrl.Text = Settings.Default.TFSUrl;
+            tbTFSRepo.Text = Settings.Default.TFSRepo;
             tbSVNUrl.Text = Settings.Default.SVNUrl;
             tbTFSUsername.Text = Settings.Default.TFSUsername;
             tbTFSDomain.Text = Settings.Default.TFSDomain;
@@ -196,6 +197,7 @@ namespace tfs2svn.Winforms
             try
             {
                 string tfsUrl = Settings.Default.TFSUrl = tbTFSUrl.Text;
+                string tfsRepo = Settings.Default.TFSRepo = tbTFSRepo.Text;
                 string svnUrl = Settings.Default.SVNUrl = tbSVNUrl.Text;
                 int startChangeset = Settings.Default.FromChangeset = int.Parse(tbChangesetStart.Text);
                 string workingCopyFolder = Settings.Default.WorkingCopyPath = tbWorkingCopyFolder.Text;
@@ -207,11 +209,11 @@ namespace tfs2svn.Winforms
                 Settings.Default.Save(); //save settings
 
                 //starting converting
-                log.Info(String.Format("======== Starting tfs2svn converting from {0} to {1}", tfsUrl, svnUrl));
+                log.Info(String.Format("======== Starting tfs2svn converting from server {0} repo {1} to {2}", tfsUrl, tfsRepo, svnUrl));
                 this.BeginInvoke(
                     new MethodInvoker(delegate() { AddListboxLine("Starting converting from TFS to SVN"); }));
 
-                Tfs2SvnConverter tfs2svnConverter = new Tfs2SvnConverter(tfsUrl, svnUrl, cbCreateRepository.Enabled && cbCreateRepository.Checked, startChangeset, workingCopyFolder, Settings.Default.SvnBinFolder, doInitialCheckout, tfsUsername, tfsPassword, tfsDomain);
+                Tfs2SvnConverter tfs2svnConverter = new Tfs2SvnConverter(tfsUrl, tfsRepo, svnUrl, cbCreateRepository.Enabled && cbCreateRepository.Checked, startChangeset, workingCopyFolder, Settings.Default.SvnBinFolder, doInitialCheckout, tfsUsername, tfsPassword, tfsDomain);
                 HookupEventHandlers(tfs2svnConverter);
                 AddUsernameMappings(tfs2svnConverter);
                 tfs2svnConverter.Convert();

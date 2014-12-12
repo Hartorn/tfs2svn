@@ -25,7 +25,7 @@ namespace tfs2svn.Console
                     Convert(args[0]);
                     break;
                 case 2:
-                    Convert(args[0], args[1]);
+                    Convert(args[0], args[1], args[2]);
                     break;
                 default:
                     PrintUsage();
@@ -35,12 +35,12 @@ namespace tfs2svn.Console
 
         #region Private Methods
 
-        private static void Convert(string tfsPath, string svnPath)
+        private static void Convert(string tfsPath, string tfsRepo, string svnPath)
         {
             string workingCopyPath = Path.GetTempPath() + "tfs2svn";
             //string svnBinFolder = @"C:\Program Files\Subversion\bin";
             string svnBinFolder = Settings.Default.SvnBinFolder;
-            Tfs2SvnConverter tfs2svnConverter = new Tfs2SvnConverter(tfsPath, svnPath, true, 1, workingCopyPath, svnBinFolder, true);
+            Tfs2SvnConverter tfs2svnConverter = new Tfs2SvnConverter(tfsPath, tfsRepo, svnPath, true, 1, workingCopyPath, svnBinFolder, true);
             HookupEventHandlers(tfs2svnConverter);
             tfs2svnConverter.Convert();
         }
@@ -74,11 +74,12 @@ namespace tfs2svn.Console
 
             string svnPath = GetSvnPath(fileContents);
             string tfsPath = GetTfsPath(fileContents);
+            string tfsRepo = GetTfsRepo(fileContents);
             bool overwrite = GetOverwriteOption(fileContents);
             string workingCopyPath = Path.GetTempPath() + "tfs2svn";
             //string svnBinFolder = @"C:\Program Files\Subversion\bin";
             string svnBinFolder = Settings.Default.SvnBinFolder;
-            Tfs2SvnConverter tfs2svnConverter = new Tfs2SvnConverter(tfsPath, svnPath, overwrite, 1, workingCopyPath, svnBinFolder, true);
+            Tfs2SvnConverter tfs2svnConverter = new Tfs2SvnConverter(tfsPath,tfsRepo, svnPath, overwrite, 1, workingCopyPath, svnBinFolder, true);
 
             AddUserMappings(tfs2svnConverter, fileContents);
 
@@ -87,6 +88,14 @@ namespace tfs2svn.Console
         private static string GetSvnPath(string fileContents)
         {
             Regex regex = new Regex(@"(?<svnpath>svnpath:\s+(?<path>[\w:\./\\]+))", RegexOptions.IgnoreCase);
+            foreach (Match match in regex.Matches(fileContents))
+                return match.Groups["path"].Value;
+
+            return "";
+        }
+        private static string GetTfsRepo(string fileContents)
+        {
+            Regex regex = new Regex(@"(?<tfsrepo>tfsrepo:\s+(?<path>[\w:\./\\]+))", RegexOptions.IgnoreCase);
 
             foreach (Match match in regex.Matches(fileContents))
                 return match.Groups["path"].Value;

@@ -1,0 +1,1 @@
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl.OpenTfsClient\obj\Debug\Colyar.SourceControl.OpenTfsClient.csprojResolveAssemblyReference.cache

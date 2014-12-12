@@ -1,0 +1,4 @@
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.Utils\bin\Debug\Colyar.Utils.dll
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.Utils\bin\Debug\Colyar.Utils.pdb
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.Utils\obj\Debug\Colyar.Utils.dll
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.Utils\obj\Debug\Colyar.Utils.pdb

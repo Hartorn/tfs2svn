@@ -1,0 +1,308 @@
+2007-10-07  Joel Reed  <joelwreed@comcast.com>
+
+	* v0.6.0 release notes
+
+	# CRUISECONTROL: add support for date range queries to the history
+	command, e.g. -version:"D2006-10-01T01:01:01Z~D2006-12-13T20:00:00Z"
+	# CRUISECONTROL: add -noprompt option
+	# CRUISECONTROL: add support for username@domain -login syntax
+	# TFSBOT: add new IRC commit notification daemon. 
+	# NEW: add alpha-quality MonoDevelop addin, with debian package
+	# NEW: implement "tf shelve <name> <path>" to create new shelvesets
+	# NEW: implement "tf shelve /delete <name>" for deleting shelvesets
+	# NEW: implement "tf merges <src> <dest>" for listing merge points
+	# NEW: implement "tf diff /ignorespace" option
+	# NEW: implement "tf rollback <changeset>" for undoing a changeset.
+	NOTE: only useful if no one else has changed the file since then.
+	# NEW: add Get.ChangesetMtimes setting: By enabling this option, 
+	the TF will set the modification time of any file subsequently fetched
+	to the date of the last changeset in which the file was modified. 
+	Warning: this mode of operation can significantly slow down "tf get".
+	NOTE: Is this the best we can do? Does the server have any better datetime info?
+	# NEW: add Get.DefaultToCwd setting: By enabling this option, the TF 
+	client will look for updates starting with the current working folder 
+	instead of pulling updates from all registered working folders.
+	# NEW: add Workspace.Default setting: If the TF client cannot determine the 
+	active workspace, first from the "/workspace:" option, and second the 
+	workspace cache, then it will use the Workspace.Default setting if non-null.
+	# BUGFIX: tf history with stopAfter > 256 shouldn't emit
+	duplicate entries (thanks to dion.olsthoorn for the report & fix)
+	# BUGFIX: tf online <path> shouldn't croak if <path> is an add awaiting 
+	its first checkin
+	# BUGFIX: tf undo <paths> shouldn't undo all local changes
+	# BUGFIX: when parsing changeset and shelveset datetimes don't 
+	drop the time portion
+	# BUGFIX: insert trailing tabs after filenames (a/b) in diffs to
+	help diffutils grok filenames with spaces
+	# BUGFIX: make sure tf ls-files <paths> is not passed a filename
+	# BUGFIX: set proper checkin time (by passing 0, not DateTime.Now - doh!)
+	# BUGFIX: fix tf ls-files /others breakage on windows for subdirectories
+	# BUGFIX: update local workspace cache when "tf workspaces" command called.
+	# BUGFIX: fix issue #8 "tf config expects ~/.tf/ to already exist"
+	# BUGFIX: teach tf that diffing binary files should print short 
+	"Binary files $1 and $2 differ" message
+	# BUGFIX: teach status command how to deal with locked files
+	# BUGFIX: teach tf branches command about server paths
+	# BUGFIX: don't clobber workspace info cache when there
+	are >1 TFS server
+	# BUGFIX: update build for monodevelop 0.18.1 changes
+	# BUGFIX: show renames correctly in changeset command
+	# API: Microsoft.TeamFoundation.Common: Artifact, ArtifactId, ILinking
+	LinkFilter, LinkingUtilities, ServiceInterfaces
+	# API: Microsoft.TeamFoundation.VersionControl.Client: ShelvingOptions,
+	ChangesetMerge
+	
+2007-09-07  Joel Reed  <joelwreed@comcast.com>
+
+	* v0.5.2 release notes
+	# NEW: add VS2005 project files and solution for building opentf 
+	on Windows
+	# NEW: add spec file for building RPMs on OpenSuse
+	# NEW: add "lock" command
+	# NEW: add "show stats" command to show server statistics
+	# NEW: add "show tools" command to show registered tools
+	# NEW: add "show build" command to show build configuration
+	# NEW: add "show ident" command to show server account information
+	# NEW: rename "tf cache" to "tf show cache"
+	# NEW: implement "tf changeset /latest" and test case
+	# NEW: implement "tf history /user:FOO" for filtering history queries by user
+	# NEW: implement "tf history /version:<vspec>" - but not ranges!
+	# NEW: add "tf history /format:byowner" and test case
+	# NEW: add "tf version" command to print program version number
+	# NEW: add "Server.Default" setting 
+	# NEW: teach File.Excludes to support directory specifications as well as
+	file glob patterns
+	# NEW: teach tf shelveset the "name;owner" syntax for specifying a shelveset
+	
+	# API: add ICredentialsProvider, ArtifactType, ChangeType, Database, 
+	IGroupSecurityService, IRegistration, Identity, IdentityType, 
+	QueryMembership, OutboundLinkType, RegistrationEntry, SearchFactor 
+	and ServiceInterface classes
+	
+	# API: start work on Microsoft.TeamFoundation.WorkItemTracking.Client assembly
+	# BUGFIX: rework exit codes throughout for more consistency
+	# BUGFIX: tf shelveset /owner:<owner> should filter results by owner
+	# BUGFIX: add column headers to history /format:brief output
+	# BUGFIX: tf get /force shouldn't set preview mode!
+	# BUGFIX: properly label renames in tf status output
+	# BUGFIX: make sure all files in a directory are read-write before
+	attempting to delete a directory containing these files
+	# BUGFIX: handle QueryHistory requests with maxCount > 256
+	# API: implement VersionControlServer.GetLatestChangesetId
+
+2007-08-02  Joel Reed  <joelwreed@comcast.com>
+
+	* v0.5.1 release notes
+
+	# NEW: add "explore" command for visually browsing a repository, sortable 
+	changeview columns, control-c to copy a changelist entry
+	# NEW: add gtk login dialog for missing auth credentials
+	# NEW: tf undo with no args will undo all local changes, previously the command
+	required at least one filename or path
+	# NEW: report on UndonePendingChange events (which can happen if file upload
+	fails on checkin for example)
+	# NEW: all commands now support reading arguments from stdin
+	# NEW: command chaining now supports output piping using %%. 
+	Implemented for ls-files and diff /q commands only!
+	For example, you can say tf ls-files /others %% add to add all
+	unknown files to the repository. 
+	# NEW: support wildcards in checkout paths
+	# NEW: teach tf workspaces command to filter by workspace name if requested
+	# NEW: add syntax guidance to tf help <cmd> invocations
+	# NEW: 8 more test cases for tf client program covering add, renaming, 
+	and deleting of directories, plus renaming files
+	# BUGFIX: tf rename <olddir> <newdir> should work now
+	# BUGFIX: teach diff /modified to check file hashes before reporting a modified file
+	# BUGFIX: when told to delete a directory, delete files within them too
+	# BUGFIX: implement CheckAuthentication call - this makes adding large numbers
+	of files more reliable as it prevents NTML authentication timeout related failures
+	# BUGFIX: on windows, must do case insensitive path comparisons 
+	when looking for cached workspace info
+	# BUGFIX: tf online <list-of-files> didn't pickup deletes to pend
+	# BUGFIX: GetLocalWorkspaceInfo(string path) should trim workspaceinfo directory
+	separators before looking for a match
+	# BUGFIX: TryGetServerItemForLocalItem and TryGetLocalItemForServerItem
+	should find longest match
+	# BUGFIX: teach tf workfold /unmap to accept relative paths
+	# BUGFIX: always sort items in an ItemSet (sorts tf dir output for example)
+
+2007-07-31  Joel Reed  <joelwreed@comcast.com>
+
+	* v0.5.0.1 release notes (brown paper bag release)
+
+	# BUGFIX: Improved error reporting broke Command::GetLocalWorkspaceCache
+	function. Darn!
+	
+2007-07-03  Joel Reed  <joelwreed@comcast.com>
+
+	* v0.5.0 release notes
+
+    	# NEW: add "tf shelvesets" command (brief output only)
+	# NEW: add support for writable working folders
+	# NEW: implement tf help <cmd> with display of valid options for 
+	each command.
+	# NEW: add "tf branches" command (limited testing)
+	# NEW: add tf online <list of files>
+	# NEW: add tf diff /brief option
+	# NEW: support for tf add /recursive <path>
+	# NEW: 20 new test cases for tf client program
+	# NEW: add "tf help /list" helper for shell completion
+	# NEW: add History.StopAfter setting option
+	# NEW: --disable-magic option for windows/cygwin users
+	# NEW: add progress indicator to GetCommand when setting permissions
+	# NEW: add configure option "--with-mslibs=<dir>" to build just the 
+	TF client using the standard MS Team Foundation Assemblies
+	# NEW: teach view command to accept multiple item specs
+	# BUGFIX: don't try to upload new directories on checkin, only files
+	# BUGFIX: Command.VerifiedFullPaths should accept directories too
+	# BUGFIX: shell wrapper tf should quote $@ so /C:"This is my comment" 
+	will work
+	# BUGFIX: uninstall man page and pkg-config file too
+	# BUGFIX: fix /format:detailed output for added files in history cmd
+	# BUGFIX: tf delete <folder> should actually delete the folder
+	# BUGFIX: honor excludeFiles setting in tf ls-files /writable
+	
+2007-06-18  Joel Reed  <joelwreed@gmail.com>
+
+	* v0.4.7 release notes
+
+	# Implement label and unlabel commands
+	# Add "cache" command which shows workspace cache settings
+	# Add /added, /modified, /deleted flags to Online command to
+	show just additions, just modifications, or just deletions 
+	respectively. These flags may be combined. With no flags, all
+	changes are incorporated.
+	# Add tf diff /modified option to show locally modified files as a
+	unified diff. Can be used to review changes before using the online
+	command.
+	# Add File.Excludes config option. Use in "online" command.
+	# Add Online.Recursive setting. Make default non-recursive to match
+	standard MS client.
+	# Add tf ls-files /writable option (mainly for windows users)
+	# BUGFIX: Fixed multiple issues related to running opentf on windows.
+	these include deleting read-only files and deleting files still open,
+	which succeed on *nix platforms, but not on windows.
+	# BUGFIX: Online command on windows. Replace server item path separator 
+	with platform path separator.
+	# BUGFIX: Replace windows path separators in diff headers with nix path 
+	separator so /usr/bin/patch is happy
+	# BUGFIX: Show deleted files in tf status as state "Deleted" not "544"
+	# BUGFIX: Compare file hashes when looking for modifications in tf online 
+	command. Previously just looked for files marked writable.
+	
+2007-06-08  Joel Reed  <joelwreed@gmail.com>
+
+	* v0.4.6 release notes:
+
+	# Add Get.Recursive and History.DefaultToCwd config options 
+	for those looking to override the less helpful defaults of the
+	standard client
+	# Add Checkout.Latest option to ensure checkout of latest version 
+	of file	rather than workspace version
+	# Change /usr/bin/cli to /usr/bin/mono in tf.sh
+	# BUGFIX: several diff fixes, including off by one error for files
+	not ending in "\n", new file diff format fixes, and B file context
+	calculation fixes
+	# BUGFIX: send local version updates to server after pending deletes
+	# BUGFIX: trailing slash on path confused online command 
+	# BUGFIX: Online, TreeClean, and ls-files command should pull item
+	list based on WorkspaceVersion not LatestVersion.
+	# BUGFIX: dont print blank lines for directories and new files for 
+	ls-files /old subcommand.
+	# BUGFIX: when upload new/changed files, send correct file length
+	# BUGFIX: add support for local paths to dir subcommand, and output
+	listing in a more unix-y format (which is, imho, far more useful)
+	# HELP: Warn that invalid options can be mistaken for paths.
+	# HELP: Add more CodePlex usage examples to README
+	
+2007-04-27  Joel Reed  <joelwreed@gmail.com>
+	
+	* v0.4.4 release notes:
+	
+	NOTE: in this release VersionControl.config is now stored in ~/.tf/Cache/,
+	instead of ~/.tf/ - this change was made for consistency with the 
+	MS versions of the TFS assemblies. If you've used the TF tool previously,
+	just move VersionControl.config from ~/.tf/ to ~/.tf/Cache/
+	
+	# add basic version of TF Power Tool 1.1 "online" command to tf.exe,
+	  includes /preview mode.
+	# add basic version of TF Power Tool 1.2 "treeclean" command to tf.exe,
+	  includes /preview mode.
+	# add changeset command 
+	# add diff command with support for diff against server latest,
+ 	  diff of pending changes, diff view of any changeset.
+	# add support for response file processing and multiple commands 
+	  on a single command line, please see documentation for usage	  
+	# add /format:detailed option to history command
+	# add basic "help" command
+	# add config command with options "Checkin.Validate", "Credentials.Save",
+	  and "History.Recursive"
+	
+	# read server setings from cache file, don't need /server 
+	  quite as much now
+	# load/store credentials from gnome-keyring if available, prompt for
+	  password when not supplied.
+	
+	# undoing a delete restores the file now
+	# numerous API additions including: WorkspaceVersionSpec, IDiffItem, 
+	  DiffItemVersionedFile, DiffOutputType, DiffOptionFlags, DiffOptions, 
+	  Conflict*, ExceptionEvent* types
+	# add DisplayString property for all VersionSpec classes and test cases
+	# better man page
+	# better error messages
+
+	# BUGFIX: when a file is checked in mark it should be marked read-only
+	# BUGFIX: do case insensitive string comparisons in ls-files and
+	online commands on windows, and use Path.DirectorySeparatorChar
+	# BUGFIX: GetLocalWorkspaceInfo should find longest matching path,
+	not first matching path
+	# BUGFIX: tf get should use CWD only to find workspace
+	# BUGFIX: properly handle checkin of files marked read-only
+	# BUGFIX: on windows find correct TFS VersionControl.config file
+	
+2007-04-22  Joel Reed  <joelwreed@gmail.com>
+
+	* v0.4.2 release: add support for querying ExtendedItems. Implement
+	tf.exe property command which uses ExtendedItems. Add GettingEventHandler,
+	PendingChangeEventHandler, ProcessingChangeEventHandler, 
+	and OperationStatus.
+
+	tf.exe now compiles/runs on MS CLR. Many bug fixes were made to APIs,
+	and client utility while testing on Windows.
+
+	tf.exe supports two new commands: "ls-files" and "properties".
+	The "status" command output was cleaned up. 
+
+	Added debian packages via "make dist"
+	
+	Started MonoDevelop plugin based on Subversion plugin. Work in progress.
+	Lots of code cleanups and bug fixes. 
+
+	Improved handling of ~/.tf/VersionControl.config cache.
+
+2007-03-28 joel reed  <joelwreed@gmail.com>
+
+	* v0.4 release: support for add, delete, rename, edit, and 
+	history, and checkin commands. added file permissions handling
+	using libmagic. show changeset id from server. doc updates.
+	multiple API additions and bug fixes.
+	
+2007-03-10 joel reed  <joelwreed@gmail.com>
+
+	* v0.3 release: much better support for tracking a repository,
+	including new files, deleted files, and renames. A preliminary
+	man page has been added, and utility commands like add, delete, 
+	checkout, and rename now modify the state of the server. The 
+	checkin command has a mysterious bug which prevents these 
+	modifications from being added back to the repository, 
+	but that should be cleaned up soon.
+
+2006-12-29 joel reed  <joelwreed@gmail.com>
+
+	* v0.1 release: dir, labels, workspaces, view,
+	and permissions commands have initial implementations
+	
+2006-12-28 joel reed  <joelwreed@gmail.com>
+
+	* initial setup of separate TFS tree
+

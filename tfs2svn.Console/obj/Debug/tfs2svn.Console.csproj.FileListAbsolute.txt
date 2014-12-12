@@ -1,0 +1,15 @@
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\tfs2svn.Console\bin\Debug\tfs2svn.Console.exe.config
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\tfs2svn.Console\bin\Debug\tfs2svn.Console.exe
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\tfs2svn.Console\bin\Debug\tfs2svn.Console.pdb
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\tfs2svn.Console\bin\Debug\Colyar.SourceControl.dll
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\tfs2svn.Console\bin\Debug\log4net.dll
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\tfs2svn.Console\bin\Debug\tfs2svn.dll
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\tfs2svn.Console\bin\Debug\Colyar.SourceControl.Subversion.dll
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\tfs2svn.Console\bin\Debug\Colyar.SourceControl.TeamFoundationServer.dll
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\tfs2svn.Console\bin\Debug\tfs2svn.pdb
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\tfs2svn.Console\bin\Debug\Colyar.SourceControl.pdb
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\tfs2svn.Console\bin\Debug\Colyar.SourceControl.Subversion.pdb
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\tfs2svn.Console\bin\Debug\Colyar.SourceControl.TeamFoundationServer.pdb
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\tfs2svn.Console\obj\Debug\tfs2svn.Console.csprojResolveAssemblyReference.cache
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\tfs2svn.Console\obj\Debug\tfs2svn.Console.exe
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\tfs2svn.Console\obj\Debug\tfs2svn.Console.pdb

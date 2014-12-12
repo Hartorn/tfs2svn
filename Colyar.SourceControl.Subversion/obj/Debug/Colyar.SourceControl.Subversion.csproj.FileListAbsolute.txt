@@ -1,0 +1,8 @@
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl.Subversion\bin\Debug\Colyar.SourceControl.Subversion.dll
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl.Subversion\bin\Debug\Colyar.SourceControl.Subversion.pdb
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl.Subversion\bin\Debug\Colyar.SourceControl.dll
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl.Subversion\bin\Debug\log4net.dll
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl.Subversion\bin\Debug\Colyar.SourceControl.pdb
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl.Subversion\obj\Debug\Colyar.SourceControl.Subversion.csprojResolveAssemblyReference.cache
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl.Subversion\obj\Debug\Colyar.SourceControl.Subversion.dll
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl.Subversion\obj\Debug\Colyar.SourceControl.Subversion.pdb
