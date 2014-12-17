@@ -86,20 +86,25 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
         {
             Changeset changeset;
             if (this._tfsProjectCollection == null)
+            {
                 throw new ArgumentException("Cannot call ProcessAllChangeSets() without Connecting first");
-
+            }
             foreach (int changesetId in GetChangesetIds())
             {
                 changeset = this._versionControlServer.GetChangeset(changesetId, true, true);
 
                 if (this.BeginChangeSet != null)
+                {
                     this.BeginChangeSet(changeset.ChangesetId, changeset.Committer, changeset.Comment, changeset.CreationDate);
-
+                }
                 foreach (Change change in OrderChanges(changeset.Changes))
+                {
                     ProcessChange(changeset, change);
-
+                }
                 if (this.EndChangeSet != null)
+                {
                     this.EndChangeSet(changeset.ChangesetId, changeset.Committer, changeset.Comment, changeset.CreationDate);
+                }
             }
         }
 

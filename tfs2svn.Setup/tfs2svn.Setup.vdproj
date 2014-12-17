@@ -250,6 +250,12 @@
         "Entry"
         {
         "MsmKey" = "8:_9D6D6CC4D2B18B927462E78EB4713246"
+        "OwnerKey" = "8:_887B26DBEEBA07A63FACDBBDC993F951"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_9D6D6CC4D2B18B927462E78EB4713246"
         "OwnerKey" = "8:_FEBAF930BDF74809A4F8F980636CDB43"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -275,12 +281,6 @@
         {
         "MsmKey" = "8:_9D6D6CC4D2B18B927462E78EB4713246"
         "OwnerKey" = "8:_2D737AB7F5F2F8FF6C43423CE0E7CC15"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_9D6D6CC4D2B18B927462E78EB4713246"
-        "OwnerKey" = "8:_887B26DBEEBA07A63FACDBBDC993F951"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -454,6 +454,12 @@
         "Entry"
         {
         "MsmKey" = "8:_D73BE31A3D5B1AD64788970BBF017B07"
+        "OwnerKey" = "8:_9397A7F48F39491A867245E9E89ECE28"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_D73BE31A3D5B1AD64788970BBF017B07"
         "OwnerKey" = "8:_FEBAF930BDF74809A4F8F980636CDB43"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -467,12 +473,6 @@
         {
         "MsmKey" = "8:_D73BE31A3D5B1AD64788970BBF017B07"
         "OwnerKey" = "8:_2D737AB7F5F2F8FF6C43423CE0E7CC15"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_D73BE31A3D5B1AD64788970BBF017B07"
-        "OwnerKey" = "8:_9397A7F48F39491A867245E9E89ECE28"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -845,7 +845,7 @@
                 {
                 "Name" = "8:.NET Framework"
                 "Message" = "8:[VSDNETMSG]"
-                "FrameworkVersion" = "8:2.0.50727"
+                "FrameworkVersion" = "8:.NETFramework,Version=v4.5.1"
                 "AllowLaterVersions" = "11:FALSE"
                 "InstallUrl" = "8:http://go.microsoft.com/fwlink/?LinkId=9832"
                 }
@@ -880,7 +880,7 @@
             "SharedLegacy" = "11:FALSE"
             "PackageAs" = "3:1"
             "Register" = "3:1"
-            "Exclude" = "11:TRUE"
+            "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
@@ -911,7 +911,7 @@
             "SharedLegacy" = "11:FALSE"
             "PackageAs" = "3:1"
             "Register" = "3:1"
-            "Exclude" = "11:TRUE"
+            "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
@@ -922,6 +922,11 @@
             "AssemblyAsmDisplayName" = "8:tfs2svn, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
+                    "_2D737AB7F5F2F8FF6C43423CE0E7CC15"
+                    {
+                    "Name" = "8:tfs2svn.dll"
+                    "Attributes" = "3:512"
+                    }
                 }
             "SourcePath" = "8:tfs2svn.dll"
             "TargetName" = "8:"
@@ -988,7 +993,7 @@
             "SharedLegacy" = "11:FALSE"
             "PackageAs" = "3:1"
             "Register" = "3:1"
-            "Exclude" = "11:TRUE"
+            "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
@@ -1019,7 +1024,7 @@
             "SharedLegacy" = "11:FALSE"
             "PackageAs" = "3:1"
             "Register" = "3:1"
-            "Exclude" = "11:TRUE"
+            "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
@@ -1092,6 +1097,11 @@
             "AssemblyAsmDisplayName" = "8:Colyar.SourceControl.Subversion, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
+                    "_887B26DBEEBA07A63FACDBBDC993F951"
+                    {
+                    "Name" = "8:Colyar.SourceControl.Subversion.dll"
+                    "Attributes" = "3:512"
+                    }
                 }
             "SourcePath" = "8:Colyar.SourceControl.Subversion.dll"
             "TargetName" = "8:"
@@ -1231,7 +1241,7 @@
             "SharedLegacy" = "11:FALSE"
             "PackageAs" = "3:1"
             "Register" = "3:1"
-            "Exclude" = "11:TRUE"
+            "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
@@ -1242,6 +1252,11 @@
             "AssemblyAsmDisplayName" = "8:Colyar.Utils, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
+                    "_A5B54E63386A9498A3D48A9A5D9A606E"
+                    {
+                    "Name" = "8:Colyar.Utils.dll"
+                    "Attributes" = "3:512"
+                    }
                 }
             "SourcePath" = "8:Colyar.Utils.dll"
             "TargetName" = "8:"
@@ -1268,6 +1283,11 @@
             "AssemblyAsmDisplayName" = "8:Colyar.SourceControl, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
+                    "_A899D30B7B9D21E30C2768DEF2999279"
+                    {
+                    "Name" = "8:Colyar.SourceControl.dll"
+                    "Attributes" = "3:512"
+                    }
                 }
             "SourcePath" = "8:Colyar.SourceControl.dll"
             "TargetName" = "8:"
@@ -1345,7 +1365,7 @@
             "SharedLegacy" = "11:FALSE"
             "PackageAs" = "3:1"
             "Register" = "3:1"
-            "Exclude" = "11:TRUE"
+            "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
@@ -1356,6 +1376,11 @@
             "AssemblyAsmDisplayName" = "8:Colyar.SourceControl.Subversion, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
+                    "_C287F38169A37149C2CA6C989E5BAF5E"
+                    {
+                    "Name" = "8:Colyar.SourceControl.Subversion.dll"
+                    "Attributes" = "3:512"
+                    }
                 }
             "SourcePath" = "8:Colyar.SourceControl.Subversion.dll"
             "TargetName" = "8:"
@@ -1402,7 +1427,7 @@
             "SharedLegacy" = "11:FALSE"
             "PackageAs" = "3:1"
             "Register" = "3:1"
-            "Exclude" = "11:TRUE"
+            "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
@@ -1475,6 +1500,11 @@
             "AssemblyAsmDisplayName" = "8:Colyar.SourceControl.TeamFoundationServer, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
+                    "_D73BE31A3D5B1AD64788970BBF017B07"
+                    {
+                    "Name" = "8:Colyar.SourceControl.TeamFoundationServer.dll"
+                    "Attributes" = "3:512"
+                    }
                 }
             "SourcePath" = "8:Colyar.SourceControl.TeamFoundationServer.dll"
             "TargetName" = "8:"
@@ -1552,7 +1582,7 @@
             "SharedLegacy" = "11:FALSE"
             "PackageAs" = "3:1"
             "Register" = "3:1"
-            "Exclude" = "11:TRUE"
+            "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
@@ -1742,7 +1772,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:tfs2svn"
         "ProductCode" = "8:{8EC32466-528F-4684-B172-9086D0F5291B}"
-        "PackageCode" = "8:{636C7E94-F5AE-41EB-955C-C30FEECF1940}"
+        "PackageCode" = "8:{0A6EC7EC-27AB-4491-A727-D377596C133D}"
         "UpgradeCode" = "8:{A87C9323-0BA2-4E5E-A74B-4E02BF65344D}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"

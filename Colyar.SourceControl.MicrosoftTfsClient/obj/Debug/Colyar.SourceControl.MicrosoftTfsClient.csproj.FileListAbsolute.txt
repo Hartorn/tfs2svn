@@ -1,10 +1,10 @@
-C:\Users\Bazire\Documents\tfs2svn\tfs2svn\tfs2svn.Winforms\bin\Debug\Colyar.SourceControl.MicrosoftTfsClient.dll
-C:\Users\Bazire\Documents\tfs2svn\tfs2svn\tfs2svn.Winforms\bin\Debug\Colyar.SourceControl.MicrosoftTfsClient.pdb
-C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl.MicrosoftTfsClient\obj\Debug\Colyar.SourceControl.MicrosoftTfsClient.csprojResolveAssemblyReference.cache
-C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl.MicrosoftTfsClient\obj\Debug\Colyar.SourceControl.MicrosoftTfsClient.dll
-C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl.MicrosoftTfsClient\obj\Debug\Colyar.SourceControl.MicrosoftTfsClient.pdb
 D:\tfs2svnReloaded\tfs2svn\tfs2svn.Winforms\bin\Debug\Colyar.SourceControl.MicrosoftTfsClient.dll
 D:\tfs2svnReloaded\tfs2svn\tfs2svn.Winforms\bin\Debug\Colyar.SourceControl.MicrosoftTfsClient.pdb
 D:\tfs2svnReloaded\tfs2svn\Colyar.SourceControl.MicrosoftTfsClient\obj\Debug\Colyar.SourceControl.MicrosoftTfsClient.csprojResolveAssemblyReference.cache
 D:\tfs2svnReloaded\tfs2svn\Colyar.SourceControl.MicrosoftTfsClient\obj\Debug\Colyar.SourceControl.MicrosoftTfsClient.dll
 D:\tfs2svnReloaded\tfs2svn\Colyar.SourceControl.MicrosoftTfsClient\obj\Debug\Colyar.SourceControl.MicrosoftTfsClient.pdb
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\tfs2svn.Winforms\bin\Debug\Colyar.SourceControl.MicrosoftTfsClient.dll
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\tfs2svn.Winforms\bin\Debug\Colyar.SourceControl.MicrosoftTfsClient.pdb
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl.MicrosoftTfsClient\obj\Debug\Colyar.SourceControl.MicrosoftTfsClient.csprojResolveAssemblyReference.cache
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl.MicrosoftTfsClient\obj\Debug\Colyar.SourceControl.MicrosoftTfsClient.dll
+C:\Users\Bazire\Documents\tfs2svn\tfs2svn\Colyar.SourceControl.MicrosoftTfsClient\obj\Debug\Colyar.SourceControl.MicrosoftTfsClient.pdb

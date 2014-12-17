@@ -211,7 +211,7 @@ namespace Colyar.SourceControl.Subversion
 
         private void ParseSvnOuput(string input, string output)
         {
-            if (Regex.Match(output, "^svn: warning:").Success)
+            if (Regex.Match(output, "^svn: warning").Success || Regex.Match(output, "^svn: avertissement").Success)
             {
                 log.Warn("Warning: " + output);
                 return;
