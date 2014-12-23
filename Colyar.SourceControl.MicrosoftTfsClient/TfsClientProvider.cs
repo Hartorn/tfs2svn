@@ -198,11 +198,19 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
             // Rename file.
             else if ((change.ChangeType & ChangeType.Rename) == ChangeType.Rename)
             {
-                RenameFile(changeset, change);
+                 if ((change.ChangeType & ChangeType.Delete) == ChangeType.Delete)
+                 {
+                    // "Delete, Rename" is possible and should be handled
+                    DeleteFile(changeset, change);
+                 } else {
+                    RenameFile(changeset, change);
 
-                //"Edit, Rename" is possible and should be handled 
-                if ((change.ChangeType & ChangeType.Edit) == ChangeType.Edit)
-                    EditFile(changeset, change);
+                     //"Edit, Rename" is possible and should be handled
+                    if ((change.ChangeType & ChangeType.Edit) == ChangeType.Edit)
+                    {
+                        EditFile(changeset, change);
+                    }
+                 }
             }
 
             // Branch file.
@@ -385,19 +393,6 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
                 throw new Exception("Error while executing GetPreviousItem", ex);
             }
         }
-
-
-        //private Item GetPreviousItem(Item item)
-        //{
-        //    try
-        //    {
-        //        return item.VersionControlServer.GetItem(item.ItemId, item.ChangesetId - 1, false);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception("Error while executing GetPreviousItem", ex);
-        //    }
-        //}
 
         #endregion
     }

@@ -106,6 +106,20 @@ namespace Colyar.SourceControl.Subversion
             if (isFolder)
                 RunSvnCommand("up \"" + path + "\"");
         }
+
+         /// <summary>
+        /// Force removal of a path.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="isFolder"></param>
+        public void ForceRemove(string path, bool isFolder)
+        {
+            RunSvnCommand("rm --force \"" + path + "\"");
+
+            if (isFolder)
+                RunSvnCommand("up \"" + path + "\"");
+        }
+
         public void MoveFile(string oldPath, string newPath, bool isFolder)
         {
             AddMissingDirectoryIfNeeded(newPath);
@@ -141,7 +155,7 @@ namespace Colyar.SourceControl.Subversion
 
             log.Info("Adding: " + directory);
             Directory.CreateDirectory(directory);
-            RunSvnCommand("add --force \"" + this._workingCopyPath + "\"");
+            RunSvnCommand("add --force \"" + directory + "\"");
             Commit("Adding missing directory", "tfs2svn", DateTime.Today, 0);
         }
         private void SetCommitAuthorAndDate(DateTime commitDate, string committer)

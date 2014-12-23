@@ -402,11 +402,21 @@ namespace Colyar.SourceControl.Tfs2Svn
 		{
 			log.Info(String.Format("Deleting folder {0}", path));
 
-			if (Directory.Exists(path) && path != _workingCopyPath) //cannot delete workingcopy root-folder
-			{
-				this._svnImporter.Remove(path, true);
-				this._svnImporter.Commit(comment, committer, date, changeset);
-			}
+				if (Directory.Exists(path) && path != _workingCopyPath) //cannot delete workingcopy root-folder
+				{
+				 //Try to remove the path without forcing it.  
+				 try
+				 {
+					 this._svnImporter.Remove(path, true);
+				 }
+				 catch (Exception ex)
+				 {
+					 log.Info(String.Format("Could not remove the path with normal methods. \n{0}", ex.Message));
+					 log.Info(String.Format("Forcing removal of {0}", path));
+					 this._svnImporter.ForceRemove(path, true);
+				 }
+				 this._svnImporter.Commit(comment, committer, date, changeset);
+				}		
 		}
 
 		void tfsExporter_FolderBranched(int changeset, string path, string committer, string comment, DateTime date)
