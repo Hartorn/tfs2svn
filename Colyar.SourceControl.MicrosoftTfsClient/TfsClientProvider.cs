@@ -116,11 +116,33 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
             ArrayList Branch = new ArrayList();
             ArrayList Add = new ArrayList();
             ArrayList Delete = new ArrayList();
+            /* Gestion of file swapping */
+            ArrayList EditRename_FS = new ArrayList();
+            ArrayList Add_FS = new ArrayList();
+            ArrayList Delete_FS = new ArrayList();
+
             Console.WriteLine("unsorted: " + changes);
             log.Info("unsorted: " + changes);
             foreach (Change change in changes)
             {
-                if ((change.ChangeType & ChangeType.Undelete) == ChangeType.Undelete)
+                if ((change.ChangeType & ChangeType.SourceRename) == ChangeType.SourceRename)
+                {
+                    if ((change.ChangeType & ChangeType.Delete) == ChangeType.Delete)
+                    {
+                        Delete_FS.Add(change);
+                    }
+                    else if ((change.ChangeType & ChangeType.Edit) == ChangeType.Edit || (change.ChangeType & ChangeType.Rename) == ChangeType.Rename)
+                    {
+                        EditRename_FS.Add(change);
+
+                    }
+                    else
+                    {
+                        Add_FS.Add(change);
+                    }
+                    // fin de la gestion du file swapping
+                }
+                else if ((change.ChangeType & ChangeType.Undelete) == ChangeType.Undelete)
                     Undelete.Add(change);
                 else if ((change.ChangeType & ChangeType.Rename) == ChangeType.Rename)
                     // no need to handle the edit here, rename will add the modified file to SVN
@@ -142,6 +164,11 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
             l.AddRange(Delete);
             l.AddRange(Edit);
             l.AddRange(Branch);
+
+            l.AddRange(Delete_FS);
+            l.AddRange(EditRename_FS);
+            l.AddRange(Add_FS);
+
             Console.WriteLine("sorted: " + l);
             log.Info("sorted: " + l);
             return l;
@@ -198,19 +225,21 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
             // Rename file.
             else if ((change.ChangeType & ChangeType.Rename) == ChangeType.Rename)
             {
-                 if ((change.ChangeType & ChangeType.Delete) == ChangeType.Delete)
-                 {
+                if ((change.ChangeType & ChangeType.Delete) == ChangeType.Delete)
+                {
                     // "Delete, Rename" is possible and should be handled
                     DeleteFile(changeset, change);
-                 } else {
+                }
+                else
+                {
                     RenameFile(changeset, change);
 
-                     //"Edit, Rename" is possible and should be handled
+                    //"Edit, Rename" is possible and should be handled
                     if ((change.ChangeType & ChangeType.Edit) == ChangeType.Edit)
                     {
                         EditFile(changeset, change);
                     }
-                 }
+                }
             }
 
             // Branch file.

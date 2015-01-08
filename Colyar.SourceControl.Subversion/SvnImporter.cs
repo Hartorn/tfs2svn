@@ -107,7 +107,17 @@ namespace Colyar.SourceControl.Subversion
                 RunSvnCommand("up \"" + path + "\"");
         }
 
-         /// <summary>
+        /// <summary>
+        /// Cleanup a path.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="isFolder"></param>
+        public void CleanUp(string path)
+        {
+            RunSvnCommand("cleanup \"" + path + "\"");
+        }
+
+        /// <summary>
         /// Force removal of a path.
         /// </summary>
         /// <param name="path"></param>
