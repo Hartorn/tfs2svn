@@ -121,8 +121,6 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
             ArrayList Add_FS = new ArrayList();
             ArrayList Delete_FS = new ArrayList();
 
-            Console.WriteLine("unsorted: " + changes);
-            log.Info("unsorted: " + changes);
             foreach (Change change in changes)
             {
                 if ((change.ChangeType & ChangeType.SourceRename) == ChangeType.SourceRename)

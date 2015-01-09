@@ -377,7 +377,9 @@ namespace Colyar.SourceControl.Tfs2Svn
                             File.Copy(tempOldPath, newPath, true);
                         }
                         else
+                        {
                             File.Copy(oldPath, newPath, true);
+                        }
 
                         fileSwapBackups.Add(newPath, oldPath);
                     }
@@ -392,8 +394,8 @@ namespace Colyar.SourceControl.Tfs2Svn
             if (!Directory.Exists(path))
                 throw new Exception("Directory not found in tfsExporter_FolderAdded");
 
-            this._svnImporter.Add(path);
-            this._svnImporter.Commit(comment, committer, date, changeset);
+            this._svnImporter.AddFolder(path);
+            //this._svnImporter.Commit(comment, committer, date, changeset);
         }
 
         void tfsExporter_FolderDeleted(int changeset, string path, string committer, string comment, DateTime date)
@@ -415,7 +417,7 @@ namespace Colyar.SourceControl.Tfs2Svn
                     log.Info(String.Format("Forcing removal of {0}", path));
                     this._svnImporter.ForceRemove(path, true);
                 }
-                this._svnImporter.Commit(comment, committer, date, changeset);
+                //this._svnImporter.Commit(comment, committer, date, changeset);
             }
         }
 
@@ -426,8 +428,8 @@ namespace Colyar.SourceControl.Tfs2Svn
             if (!Directory.Exists(path))
                 throw new Exception("Directory not found in tfsExporter_FolderBranched");
 
-            this._svnImporter.Add(path);
-            this._svnImporter.Commit(comment, committer, date, changeset);
+            this._svnImporter.AddFolder(path);
+            //this._svnImporter.Commit(comment, committer, date, changeset);
         }
 
         void tfsExporter_FolderUndeleted(int changeset, string path, string committer, string comment, DateTime date)
@@ -437,8 +439,8 @@ namespace Colyar.SourceControl.Tfs2Svn
             if (!Directory.Exists(path))
                 throw new Exception("Directory not found in tfsExporter_FolderUndeleted");
 
-            this._svnImporter.Add(path);
-            this._svnImporter.Commit(comment, committer, date, changeset);
+            this._svnImporter.AddFolder(path);
+            //this._svnImporter.Commit(comment, committer, date, changeset);
         }
 
         void tfsExporter_FolderRenamed(int changeset, string oldPath, string newPath, string committer, string comment, DateTime date)

@@ -99,6 +99,15 @@ namespace Colyar.SourceControl.Subversion
                 RunSvnCommand("add \"" + path + "\"");
             }
         }
+        public void AddFolder(string path)
+        {
+            if (path != this._workingCopyPath)
+            {
+                AddMissingDirectoryIfNeeded(path);
+                RunSvnCommand("add --depth=empty \"" + path + "\"");
+            }
+        }
+
         public void Remove(string path, bool isFolder)
         {
             RunSvnCommand("rm \"" + path + "\"");
@@ -165,8 +174,26 @@ namespace Colyar.SourceControl.Subversion
 
             log.Info("Adding: " + directory);
             Directory.CreateDirectory(directory);
-            RunSvnCommand("add --force \"" + directory + "\"");
-            Commit("Adding missing directory", "tfs2svn", DateTime.Today, 0);
+            string workingCopyDirectory;
+            if (!_workingCopyPath.EndsWith("\\"))
+            {
+                workingCopyDirectory = Directory.GetParent(_workingCopyPath + '\\').FullName;
+            }
+            else
+            {
+                workingCopyDirectory = Directory.GetParent(_workingCopyPath).FullName;
+            }
+
+            string[] pathParts = directory.Substring(workingCopyDirectory.Length).Split('\\');
+            foreach (string pathPart in pathParts)
+            {
+                workingCopyDirectory += '\\';
+                workingCopyDirectory += pathPart;
+                RunSvnCommand(String.Format("add --depth=empty {0}", workingCopyDirectory));
+            }
+
+            //RunSvnCommand("add --force \"" + directory + "\"");
+            // Commit("Adding missing directory", "tfs2svn", DateTime.Today, 0);
         }
         private void SetCommitAuthorAndDate(DateTime commitDate, string committer)
         {
