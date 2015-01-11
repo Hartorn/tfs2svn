@@ -96,7 +96,7 @@ namespace Colyar.SourceControl.Subversion
             if (path != this._workingCopyPath)
             {
                 AddMissingDirectoryIfNeeded(path);
-                RunSvnCommand("add \"" + path + "\"");
+                RunSvnCommand(String.Format("add \"{0}\"", path));
             }
         }
         public void AddFolder(string path)
@@ -104,16 +104,16 @@ namespace Colyar.SourceControl.Subversion
             if (path != this._workingCopyPath)
             {
                 AddMissingDirectoryIfNeeded(path);
-                RunSvnCommand("add --depth=empty \"" + path + "\"");
+                RunSvnCommand(String.Format("add --depth=empty \"{0}\"", path));
             }
         }
 
         public void Remove(string path, bool isFolder)
         {
-            RunSvnCommand("rm \"" + path + "\"");
+            RunSvnCommand(String.Format("rm \"{0}\"", path));
 
             if (isFolder)
-                RunSvnCommand("up \"" + path + "\"");
+                RunSvnCommand(String.Format("up \"{0}\"", path));
         }
 
         /// <summary>
@@ -123,7 +123,7 @@ namespace Colyar.SourceControl.Subversion
         /// <param name="isFolder"></param>
         public void CleanUp(string path)
         {
-            RunSvnCommand("cleanup \"" + path + "\"");
+            RunSvnCommand(String.Format("cleanup \"{0}\"", path));
         }
 
         /// <summary>
@@ -133,16 +133,16 @@ namespace Colyar.SourceControl.Subversion
         /// <param name="isFolder"></param>
         public void ForceRemove(string path, bool isFolder)
         {
-            RunSvnCommand("rm --force \"" + path + "\"");
+            RunSvnCommand(String.Format("rm --force \"{0}\"", path));
 
             if (isFolder)
-                RunSvnCommand("up \"" + path + "\"");
+                RunSvnCommand(String.Format("up \"{0}\"", path));
         }
 
         public void MoveFile(string oldPath, string newPath, bool isFolder)
         {
             AddMissingDirectoryIfNeeded(newPath);
-            RunSvnCommand("mv \"" + oldPath + "\" \"" + newPath + "\"");
+            RunSvnCommand(String.Format("mv \"{0}\" \"{1}\"", oldPath, newPath));
         }
         public void MoveServerSide(string oldPath, string newPath, int changeset, string committer, DateTime commitDate)
         {
@@ -212,52 +212,47 @@ namespace Colyar.SourceControl.Subversion
         {
             return path.Replace("\\", "/");
         }
-
-        private void RunSvnCommand(string command)
+        private Tuple<string,string> RunCommand(string executablePath, string arguments)
         {
-            log.Info("svn " + command);
-
+            string standardOutput;
+            string errorOutput;
             Process p = new Process();
-            p.StartInfo.FileName = this._svnPath + @"\svn.exe";
-            p.StartInfo.Arguments = command;
-
+            p.StartInfo.FileName = executablePath;
+            p.StartInfo.Arguments = arguments;
             // Redirect the output stream of the child process.
             p.StartInfo.UseShellExecute = false;
             p.StartInfo.CreateNoWindow = true;
             p.StartInfo.RedirectStandardOutput = true;
             p.StartInfo.RedirectStandardError = true;
-
-            //Debug.WriteLine("{0} {1}", p.StartInfo.FileName, p.StartInfo.Arguments);
-
-            p.Start();
             p.PriorityClass = ProcessPriorityClass.High;
-            p.StandardOutput.ReadToEnd(); //read standard output and swallow
-            ParseSvnOuput(command, p.StandardError.ReadToEnd());
-            p.WaitForExit();
+            
+            p.Start();
+            standardOutput = p.StandardOutput.ReadToEnd();
+            errorOutput = p.StandardError.ReadToEnd();
+            if (!p.HasExited)
+            {
+                p.WaitForExit();
+            }
+            p.Close();
 
+            return new Tuple<string, string>(standardOutput, errorOutput);
+        }
+        private void RunSvnCommand(string command)
+        {
+            log.Info("svn " + command);
+
+            Tuple<string, string> outputs = RunCommand(this._svnPath + @"\svn.exe", command);
+
+            ParseSvnOuput(command, outputs.Item2);// item2 is error output
         }
         private void RunSvnAdminCommand(string command)
         {
             log.Info("svnadmin " + command);
 
-            Process p = new Process();
-            p.StartInfo.FileName = this._svnPath + @"\svnadmin.exe";
-            log.Info("svn :" + p.StartInfo.FileName);
-            p.StartInfo.Arguments = command;
+            Tuple<string, string> outputs = RunCommand(this._svnPath + @"\svnadmin.exe", command);
 
-            // Redirect the output stream of the child process.
-            p.StartInfo.UseShellExecute = false;
-            p.StartInfo.CreateNoWindow = true;
-            p.StartInfo.RedirectStandardOutput = true;
-            p.StartInfo.RedirectStandardError = true;
+            ParseSvnOuput(command, outputs.Item2);// item2 is error output
 
-            Debug.WriteLine("{0} {1}", p.StartInfo.FileName, p.StartInfo.Arguments);
-
-            p.Start();
-            p.PriorityClass = ProcessPriorityClass.High;
-            p.StandardOutput.ReadToEnd(); //read standard output and swallow
-            ParseSvnAdminOuput(command, p.StandardError.ReadToEnd());
-            p.WaitForExit();
         }
 
         private void ParseSvnOuput(string input, string output)
