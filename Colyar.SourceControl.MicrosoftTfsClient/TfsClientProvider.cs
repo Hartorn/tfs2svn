@@ -132,7 +132,6 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
                     else if ((change.ChangeType & ChangeType.Edit) == ChangeType.Edit || (change.ChangeType & ChangeType.Rename) == ChangeType.Rename)
                     {
                         EditRename_FS.Add(change);
-
                     }
                     else
                     {

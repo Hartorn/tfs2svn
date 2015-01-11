@@ -50,7 +50,7 @@ namespace Colyar.SourceControl.Subversion
 
         public void CreateRepository(string repositoryPath)
         {
-            RunSvnAdminCommand("create \"" + repositoryPath + "\"");
+            RunSvnAdminCommand(String.Format("create \"{0}\"",repositoryPath));
         }
         public void CreateRepository()
         {
@@ -65,11 +65,11 @@ namespace Colyar.SourceControl.Subversion
         }
         public void Checkout()
         {
-            RunSvnCommand("co \"" + this._repositoryPath + "\" \"" + this._workingCopyPath + "\"");
+            RunSvnCommand(String.Format("co \"{0}\" \"{1}\"", this._repositoryPath, this._workingCopyPath));
         }
         public void Update()
         {
-            RunSvnCommand("up \"" + this._workingCopyPath + "\"");
+            RunSvnCommand(String.Format("up \"{0}\"", this._workingCopyPath));
         }
         public void Commit(string message, string committer, DateTime commitDate, int changeSet)
         {
