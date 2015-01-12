@@ -158,6 +158,10 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
                     case ChangeType.Edit:
                         Edit.Add(change);
                         break;
+                    case ChangeType.None:
+                        break;
+                    default:
+                        throw new Exception(String.Format("Unmanaged change to order: {0}", change.ChangeType));
                 }
             }
             ArrayList l = new ArrayList();
@@ -175,7 +179,7 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
 
             log.Info("Ordered Changes - Begin");
             foreach(Change change in l){
-                log.Info(String.Format("Change - Item :{0} ChangeType:{1}", change.Item.ArtifactUri, change.ChangeType));
+                log.Info(String.Format("Change - Item: {0} ChangeType: {1}", change.Item.ArtifactUri, change.ChangeType));
             }
             log.Info("Ordered Changes - End");
             return l;
