@@ -41,7 +41,8 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
         private VersionControlServer _versionControlServer;
         private int _startingChangeset;
         private static readonly ILog log = LogManager.GetLogger(typeof(TfsClientProvider));
-
+        private static readonly ChangeType changeMask = ChangeType.Add | ChangeType.Branch | ChangeType.Delete | ChangeType.Edit | ChangeType.Rename | ChangeType.Undelete;
+        private static readonly ChangeType fullMask = changeMask | ChangeType.SourceRename;
         #endregion
 
         #region Public Methods
@@ -123,35 +124,41 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
 
             foreach (Change change in changes)
             {
-                if ((change.ChangeType & ChangeType.SourceRename) == ChangeType.SourceRename)
+                switch (change.ChangeType & TfsClientProvider.fullMask)
                 {
-                    if ((change.ChangeType & ChangeType.Delete) == ChangeType.Delete)
-                    {
+                    case ChangeType.SourceRename | ChangeType.Delete:
                         Delete_FS.Add(change);
-                    }
-                    else if ((change.ChangeType & ChangeType.Edit) == ChangeType.Edit || (change.ChangeType & ChangeType.Rename) == ChangeType.Rename)
-                    {
+                        break;
+                    case ChangeType.SourceRename | ChangeType.Edit:
+                    case ChangeType.SourceRename | ChangeType.Rename:
                         EditRename_FS.Add(change);
-                    }
-                    else
-                    {
+                        break;
+                    case ChangeType.SourceRename | ChangeType.Add:
                         Add_FS.Add(change);
-                    }
+                        break;
                     // fin de la gestion du file swapping
+                    case ChangeType.Undelete:
+                        Undelete.Add(change);
+                        break;
+                    case ChangeType.Rename:
+                    case ChangeType.Rename | ChangeType.Edit:
+                    case ChangeType.Rename | ChangeType.Delete:
+                        Rename.Add(change);
+                        // no need to handle the edit here, rename will add the modified file to SVN
+                        break;
+                    case ChangeType.Branch:
+                        Branch.Add(change);
+                        break;
+                    case ChangeType.Add:
+                        Add.Add(change);
+                        break;
+                    case ChangeType.Delete:
+                        Delete.Add(change);
+                        break;
+                    case ChangeType.Edit:
+                        Edit.Add(change);
+                        break;
                 }
-                else if ((change.ChangeType & ChangeType.Undelete) == ChangeType.Undelete)
-                    Undelete.Add(change);
-                else if ((change.ChangeType & ChangeType.Rename) == ChangeType.Rename)
-                    // no need to handle the edit here, rename will add the modified file to SVN
-                    Rename.Add(change);
-                else if ((change.ChangeType & ChangeType.Branch) == ChangeType.Branch)
-                    Branch.Add(change);
-                else if ((change.ChangeType & ChangeType.Add) == ChangeType.Add)
-                    Add.Add(change);
-                else if ((change.ChangeType & ChangeType.Delete) == ChangeType.Delete)
-                    Delete.Add(change);
-                else if ((change.ChangeType & ChangeType.Edit) == ChangeType.Edit)
-                    Edit.Add(change);
             }
             ArrayList l = new ArrayList();
             // add the elements in the order of the following commands
@@ -166,8 +173,11 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
             l.AddRange(EditRename_FS);
             l.AddRange(Add_FS);
 
-            Console.WriteLine("sorted: " + l);
-            log.Info("sorted: " + l);
+            log.Info("Ordered Changes - Begin");
+            foreach(Change change in l){
+                log.Info(String.Format("Change - Item :{0} ChangeType:{1}", change.Item.ArtifactUri, change.ChangeType));
+            }
+            log.Info("Ordered Changes - End");
             return l;
         }
 
@@ -204,79 +214,94 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
 
         private void ProcessChange(Changeset changeset, Change change)
         {
-            // Process file change.
-            if (change.Item.ItemType == ItemType.File)
-                ProcessFileChange(changeset, change);
-
-              // Process folder change.
-            else if (change.Item.ItemType == ItemType.Folder)
-                ProcessFolderChange(changeset, change);
+            switch (change.Item.ItemType)
+            {
+                case ItemType.File:
+                    // Process file change.
+                    ProcessFileChange(changeset, change);
+                    break;
+                case ItemType.Folder:
+                    // Process folder change.
+                    ProcessFolderChange(changeset, change);
+                    break;
+            }
         }
 
         private void ProcessFileChange(Changeset changeset, Change change)
         {
-            // Undelete file (really just an add)
-            if ((change.ChangeType & ChangeType.Undelete) == ChangeType.Undelete)
-                UndeleteFile(changeset, change);
-
-            // Rename file.
-            else if ((change.ChangeType & ChangeType.Rename) == ChangeType.Rename)
+            switch (change.ChangeType & TfsClientProvider.changeMask)
             {
-                if ((change.ChangeType & ChangeType.Delete) == ChangeType.Delete)
-                {
+                case ChangeType.Undelete:
+                    // Undelete file (really just an add)
+                    UndeleteFile(changeset, change);
+                    break;
+                case ChangeType.Rename | ChangeType.Delete:
                     // "Delete, Rename" is possible and should be handled
                     DeleteFile(changeset, change);
-                }
-                else
-                {
-                    RenameFile(changeset, change);
-
+                    break;
+                case ChangeType.Rename | ChangeType.Edit:
                     //"Edit, Rename" is possible and should be handled
-                    if ((change.ChangeType & ChangeType.Edit) == ChangeType.Edit)
-                    {
-                        EditFile(changeset, change);
-                    }
-                }
+                    RenameFile(changeset, change);
+                    EditFile(changeset, change);
+                    break;
+                case ChangeType.Rename:
+                    RenameFile(changeset, change);
+                    break;
+                case ChangeType.Branch:
+                    // Branch file.
+                    BranchFile(changeset, change);
+                    break;
+                case ChangeType.Add:
+                    // Add file.
+                    AddFile(changeset, change);
+                    break;
+                case ChangeType.Delete:
+                    // Delete file.
+                    DeleteFile(changeset, change);
+                    break;
+                case ChangeType.Edit:
+                    // Edit file.
+                    EditFile(changeset, change);
+                    break;
+                case ChangeType.None:
+                    break;
+                default:
+                    throw new Exception(String.Format("Unmanaged file change : {0}", change.ChangeType));
             }
-
-            // Branch file.
-            else if ((change.ChangeType & ChangeType.Branch) == ChangeType.Branch)
-                BranchFile(changeset, change);
-
-            // Add file.
-            else if ((change.ChangeType & ChangeType.Add) == ChangeType.Add)
-                AddFile(changeset, change);
-
-            // Delete file.
-            else if ((change.ChangeType & ChangeType.Delete) == ChangeType.Delete)
-                DeleteFile(changeset, change);
-
-            // Edit file.
-            else if ((change.ChangeType & ChangeType.Edit) == ChangeType.Edit)
-                EditFile(changeset, change);
         }
 
         private void ProcessFolderChange(Changeset changeset, Change change)
         {
-            // Undelete folder.
-            if ((change.ChangeType & ChangeType.Undelete) == ChangeType.Undelete)
-                UndeleteFolder(changeset, change);
-
-            // Rename folder.
-            else if ((change.ChangeType & ChangeType.Rename) == ChangeType.Rename)
-                RenameFolder(changeset, change);
-
-            // Branch folder.
-            else if ((change.ChangeType & ChangeType.Branch) == ChangeType.Branch)
-                BranchFolder(changeset, change);
-
-            // Add folder.
-            else if ((change.ChangeType & ChangeType.Add) == ChangeType.Add)
-                AddFolder(changeset, change);
-
-            // Delete folder.
-            else if ((change.ChangeType & ChangeType.Delete) == ChangeType.Delete)
-                DeleteFolder(changeset, change);
+            switch (change.ChangeType & TfsClientProvider.changeMask)
+            {
+                case ChangeType.Undelete:
+                    // Undelete folder (really just an add)
+                    UndeleteFolder(changeset, change);
+                    break;
+                case ChangeType.Rename | ChangeType.Delete:
+                    // "Delete, Rename" is possible and should be handled
+                    DeleteFolder(changeset, change);
+                    break;
+                case ChangeType.Rename:
+                    RenameFolder(changeset, change);
+                    break;
+                case ChangeType.Branch:
+                    // Branch folder.
+                    BranchFolder(changeset, change);
+                    break;
+                case ChangeType.Add:
+                    // Add folder.
+                    AddFolder(changeset, change);
+                    break;
+                case ChangeType.Delete:
+                    // Delete folder.
+                    DeleteFolder(changeset, change);
+                    break;
+                case ChangeType.None:
+                    break;
+                default:
+                    throw new Exception(String.Format("Unmanaged folder change : {0}", change.ChangeType));
+            }
         }
 
         private void AddFile(Changeset changeset, Change change)
