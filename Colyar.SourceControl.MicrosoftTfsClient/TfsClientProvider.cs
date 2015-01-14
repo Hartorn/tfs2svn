@@ -279,7 +279,7 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
                 case 0://ChangeType.None different from 0 ?
                     break;
                 default:
-                    throw new Exception(String.Format("Unmanaged file change : {0}", change.ChangeType));
+                    throw new Exception(String.Format("Unmanaged file change : {0}, minus mask : {1} ", change.ChangeType, change.ChangeType & TfsClientProvider.changeMask));
             }
         }
 
