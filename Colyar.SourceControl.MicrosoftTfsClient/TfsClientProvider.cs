@@ -131,13 +131,16 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
                         break;
                     case ChangeType.SourceRename | ChangeType.Edit:
                     case ChangeType.SourceRename | ChangeType.Rename:
+                    case ChangeType.SourceRename | ChangeType.Rename | ChangeType.Edit:
                         EditRename_FS.Add(change);
                         break;
                     case ChangeType.SourceRename | ChangeType.Add:
+                    case ChangeType.SourceRename | ChangeType.Add | ChangeType.Edit:
                         Add_FS.Add(change);
                         break;
                     // fin de la gestion du file swapping
                     case ChangeType.Undelete:
+                    case ChangeType.Undelete | ChangeType.Edit:
                         Undelete.Add(change);
                         break;
                     case ChangeType.Rename:
@@ -150,6 +153,7 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
                         Branch.Add(change);
                         break;
                     case ChangeType.Add:
+                    case ChangeType.Add | ChangeType.Edit:
                         Add.Add(change);
                         break;
                     case ChangeType.Delete:
@@ -178,8 +182,9 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
             l.AddRange(Add_FS);
 
             log.Info("Ordered Changes - Begin");
-            foreach(Change change in l){
-                log.Info(String.Format("Change - Item: {0} ChangeType: {1}", change.Item.ArtifactUri, change.ChangeType));
+            foreach (Change change in l)
+            {
+                log.Info(String.Format("Change - Item: {0} ChangeType: {1}", change.Item, change.ChangeType));
             }
             log.Info("Ordered Changes - End");
             return l;
@@ -236,6 +241,7 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
             switch (change.ChangeType & TfsClientProvider.changeMask)
             {
                 case ChangeType.Undelete:
+                case ChangeType.Undelete | ChangeType.Edit:
                     // Undelete file (really just an add)
                     UndeleteFile(changeset, change);
                     break;
@@ -256,6 +262,7 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
                     BranchFile(changeset, change);
                     break;
                 case ChangeType.Add:
+                case ChangeType.Add | ChangeType.Edit:
                     // Add file.
                     AddFile(changeset, change);
                     break;

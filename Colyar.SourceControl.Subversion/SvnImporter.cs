@@ -50,7 +50,7 @@ namespace Colyar.SourceControl.Subversion
 
         public void CreateRepository(string repositoryPath)
         {
-            RunSvnAdminCommand(String.Format("create \"{0}\"",repositoryPath));
+            RunSvnAdminCommand(String.Format("create \"{0}\"", repositoryPath));
         }
         public void CreateRepository()
         {
@@ -212,7 +212,7 @@ namespace Colyar.SourceControl.Subversion
         {
             return path.Replace("\\", "/");
         }
-        private Tuple<string,string> RunCommand(string executablePath, string arguments)
+        private Tuple<string, string> RunCommand(string executablePath, string arguments)
         {
             string standardOutput;
             string errorOutput;
@@ -224,9 +224,12 @@ namespace Colyar.SourceControl.Subversion
             p.StartInfo.CreateNoWindow = true;
             p.StartInfo.RedirectStandardOutput = true;
             p.StartInfo.RedirectStandardError = true;
-            p.PriorityClass = ProcessPriorityClass.High;
-            
+
             p.Start();
+            /*if (!p.HasExited)
+            {
+                p.PriorityClass = ProcessPriorityClass.High;
+            }*/
             standardOutput = p.StandardOutput.ReadToEnd();
             errorOutput = p.StandardError.ReadToEnd();
             if (!p.HasExited)
