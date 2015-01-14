@@ -150,6 +150,7 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
                         // no need to handle the edit here, rename will add the modified file to SVN
                         break;
                     case ChangeType.Branch:
+                    case ChangeType.Branch | ChangeType.Edit:
                         Branch.Add(change);
                         break;
                     case ChangeType.Add:
@@ -259,6 +260,7 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
                     RenameFile(changeset, change);
                     break;
                 case ChangeType.Branch:
+                case ChangeType.Branch | ChangeType.Edit:
                     // Branch file.
                     BranchFile(changeset, change);
                     break;
