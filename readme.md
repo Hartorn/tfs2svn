@@ -5,8 +5,8 @@ tfs2svn is a Windows application that converts a Team Foundation Server (TFS) re
 
 ## Download
 
-### 1.3
+### 2.0
 
-[https://github.com/kevincolyar/tfs2svn/releases/download/1.3/tfs2svn.Setup.msi](https://github.com/kevincolyar/tfs2svn/releases/download/1.3/tfs2svn.Setup.msi)
+[https://github.com/Hartorn/tfs2svn/releases/download/v2.0/tfs2svn.Setup.msi](https://github.com/Hartorn/tfs2svn/releases/download/v2.0/tfs2svn.Setup.msi)
 
 
