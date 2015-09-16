@@ -431,12 +431,11 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
 
         private string GetItemPath(Item item)
         {
-            if (!item.ServerItem.ToLowerInvariant().StartsWith(this._remotePath.ToLowerInvariant()))
+            if (!item.ServerItem.StartsWith(this._remotePath, StringComparison.OrdinalIgnoreCase))
                 throw new Exception(item.ServerItem + " is not contained in " + this._remotePath);
 
-            return String.Concat(this._localPath, item.ServerItem.Remove(0, this._remotePath.Length).Replace("/", "\\"));
-            //return this._localPath + item.ServerItem.Replace(this._remotePath, "").Replace("/", "\\");
-            //TODO: maybe use System.IO.Path.Combine()
+            var serverRelativePath = item.ServerItem.Remove(0, this._remotePath.Length).Replace("/", "\\");
+            return Path.Combine(this._localPath, serverRelativePath);
         }
 
         private Item GetPreviousItem(Item item)
