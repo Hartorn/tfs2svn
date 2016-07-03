@@ -3,3 +3,4 @@
 */Debug/
 */bin/Debug/
 *.FileListAbsolute.txt
+/packages/*
