@@ -1,6 +1,6 @@
-*/obj/
-*/obj/Debug/
-*/Debug/
-*/bin/Debug/
+**/obj/
+**/bin/
 *.FileListAbsolute.txt
-/packages/*
+/packages/
+*/Debug/
+*.suo
