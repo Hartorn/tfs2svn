@@ -252,10 +252,8 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
-    <PreBuildEvent>
-    </PreBuildEvent>
-  </PropertyGroup>
+  <Target Name="RemoveObjAndBin" AfterTargets="Clean">
+    <RemoveDir Directories="$(BaseIntermediateOutputPath)" />
+    <RemoveDir Directories="$(TargetDir)" />
+  </Target>
 </Project>
