@@ -1,7 +1,6 @@
 using System;
 
-namespace Colyar.SourceControl
-{
+namespace Colyar.SourceControl {
     #region Public Delegates
 
     public delegate void ChangesetHandler(int changeset, string committer, string comment, DateTime date);

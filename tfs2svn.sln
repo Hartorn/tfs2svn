@@ -6,8 +6,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Colyar.SourceControl", "Col
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Colyar.SourceControl.Subversion", "Colyar.SourceControl.Subversion\Colyar.SourceControl.Subversion.csproj", "{AD47F42D-1D9D-4C1A-B216-B82E652DEC5E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Colyar.SourceControl.TeamFoundationServer", "Colyar.SourceControl.TeamFoundationServer\Colyar.SourceControl.TeamFoundationServer.csproj", "{8CC7D187-30BF-49D5-ACD6-A4415B71EE25}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tfs2svn.Console", "tfs2svn.Console\tfs2svn.Console.csproj", "{4D159271-36C4-466E-A735-1EAF54E28F9A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tfs2svn.Winforms", "tfs2svn.WinForms\tfs2svn.Winforms.csproj", "{3611479C-AD86-4B4A-AF59-82D27D026E7A}"
@@ -54,18 +52,6 @@ Global
 		{AD47F42D-1D9D-4C1A-B216-B82E652DEC5E}.Release|x64.Build.0 = Release|x64
 		{AD47F42D-1D9D-4C1A-B216-B82E652DEC5E}.Release|x86.ActiveCfg = Release|x86
 		{AD47F42D-1D9D-4C1A-B216-B82E652DEC5E}.Release|x86.Build.0 = Release|x86
-		{8CC7D187-30BF-49D5-ACD6-A4415B71EE25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8CC7D187-30BF-49D5-ACD6-A4415B71EE25}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8CC7D187-30BF-49D5-ACD6-A4415B71EE25}.Debug|x64.ActiveCfg = Debug|x64
-		{8CC7D187-30BF-49D5-ACD6-A4415B71EE25}.Debug|x64.Build.0 = Debug|x64
-		{8CC7D187-30BF-49D5-ACD6-A4415B71EE25}.Debug|x86.ActiveCfg = Debug|x86
-		{8CC7D187-30BF-49D5-ACD6-A4415B71EE25}.Debug|x86.Build.0 = Debug|x86
-		{8CC7D187-30BF-49D5-ACD6-A4415B71EE25}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8CC7D187-30BF-49D5-ACD6-A4415B71EE25}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8CC7D187-30BF-49D5-ACD6-A4415B71EE25}.Release|x64.ActiveCfg = Release|x64
-		{8CC7D187-30BF-49D5-ACD6-A4415B71EE25}.Release|x64.Build.0 = Release|x64
-		{8CC7D187-30BF-49D5-ACD6-A4415B71EE25}.Release|x86.ActiveCfg = Release|x86
-		{8CC7D187-30BF-49D5-ACD6-A4415B71EE25}.Release|x86.Build.0 = Release|x86
 		{4D159271-36C4-466E-A735-1EAF54E28F9A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4D159271-36C4-466E-A735-1EAF54E28F9A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4D159271-36C4-466E-A735-1EAF54E28F9A}.Debug|x64.ActiveCfg = Debug|x64

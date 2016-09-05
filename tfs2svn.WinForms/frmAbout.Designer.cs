@@ -48,7 +48,7 @@ namespace tfs2svn.Winforms
             this.linkLabel1.AutoSize = true;
             this.linkLabel1.Location = new System.Drawing.Point(102, 251);
             this.linkLabel1.Name = "linkLabel1";
-            this.linkLabel1.Size = new System.Drawing.Size(193, 13);
+            this.linkLabel1.Size = new System.Drawing.Size(174, 13);
             this.linkLabel1.TabIndex = 1;
             this.linkLabel1.TabStop = true;
             this.linkLabel1.Text = "https://github.com/Hartorn/tfs2svn";

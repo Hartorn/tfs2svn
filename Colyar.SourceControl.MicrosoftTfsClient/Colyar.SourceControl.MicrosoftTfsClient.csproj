@@ -344,10 +344,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Colyar.SourceControl.TeamFoundationServer\Colyar.SourceControl.TeamFoundationServer.csproj">
-      <Project>{8CC7D187-30BF-49D5-ACD6-A4415B71EE25}</Project>
-      <Name>Colyar.SourceControl.TeamFoundationServer</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Colyar.SourceControl\Colyar.SourceControl.csproj">
       <Project>{46B5216D-37A6-4B2C-9333-D591EFB4C08E}</Project>
       <Name>Colyar.SourceControl</Name>

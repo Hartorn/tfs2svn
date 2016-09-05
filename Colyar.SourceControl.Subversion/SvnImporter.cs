@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using System.Text.RegularExpressions;
 using log4net;
 using SharpSvn;
 
@@ -14,6 +12,7 @@ namespace Colyar.SourceControl.Subversion {
 
         private string _repositoryPath;
         private string _workingCopyPath;
+        private Encoding _encoding;
         private readonly string _svnPath;
         private readonly Dictionary<string, string> _usernameMap = new Dictionary<string, string>();
         private static readonly ILog log = LogManager.GetLogger(typeof(SvnImporter));
@@ -34,10 +33,11 @@ namespace Colyar.SourceControl.Subversion {
 
         #region Public Constructor
 
-        public SvnImporter(string repositoryPath, string workingCopyPath, string svnBinFolder) {
+        public SvnImporter(string repositoryPath, string workingCopyPath, string svnBinFolder, Encoding encoding) {
             this._repositoryPath = repositoryPath.Replace("\\", "/");
             this._workingCopyPath = workingCopyPath;
             this._svnPath = svnBinFolder;
+            this._encoding = encoding;
         }
 
         #endregion
@@ -45,7 +45,10 @@ namespace Colyar.SourceControl.Subversion {
         #region Public Methods
 
         public void CreateRepository(string repositoryPath) {
-            RunSvnAdminCommand(String.Format("create \"{0}\"", repositoryPath));
+            using (SvnRepositoryClient client = new SvnRepositoryClient()) {
+                client.CreateRepository(repositoryPath);
+            }
+            //RunSvnAdminCommand(String.Format("create \"{0}\"", repositoryPath));
         }
         public void CreateRepository() {
             CreateRepository(this._repositoryPath);
@@ -80,7 +83,7 @@ namespace Colyar.SourceControl.Subversion {
             if (message != null) {
                 message = message.Replace("\"", "\\\"").Replace("\r\n", "\n");
                 // http://svnbook.red-bean.com/en/1.2/svn.advanced.l10n.html
-                message = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(message));
+                message = this._encoding.GetString(this._encoding.GetBytes(message));
             }
 
             message = String.Format("[TFS Changeset #{0}]\n{1}",
@@ -267,63 +270,63 @@ namespace Colyar.SourceControl.Subversion {
         private string ToUrlPath(string path) {
             return path.Replace("\\", "/");
         }
-        private Tuple<string, string> RunCommand(string executablePath, string arguments) {
-            string standardOutput;
-            string errorOutput;
-            Process p = new Process();
-            p.StartInfo.FileName = executablePath;
-            p.StartInfo.Arguments = arguments;
-            // Redirect the output stream of the child process.
-            p.StartInfo.UseShellExecute = false;
-            p.StartInfo.CreateNoWindow = true;
-            p.StartInfo.RedirectStandardOutput = true;
-            p.StartInfo.RedirectStandardError = true;
+        //private Tuple<string, string> RunCommand(string executablePath, string arguments) {
+        //    string standardOutput;
+        //    string errorOutput;
+        //    Process p = new Process();
+        //    p.StartInfo.FileName = executablePath;
+        //    p.StartInfo.Arguments = arguments;
+        //    // Redirect the output stream of the child process.
+        //    p.StartInfo.UseShellExecute = false;
+        //    p.StartInfo.CreateNoWindow = true;
+        //    p.StartInfo.RedirectStandardOutput = true;
+        //    p.StartInfo.RedirectStandardError = true;
 
-            p.Start();
-            /*if (!p.HasExited)
-            {
-                p.PriorityClass = ProcessPriorityClass.High;
-            }*/
-            standardOutput = p.StandardOutput.ReadToEnd();
-            errorOutput = p.StandardError.ReadToEnd();
-            if (!p.HasExited) {
-                p.WaitForExit();
-            }
-            p.Close();
+        //    p.Start();
+        //    /*if (!p.HasExited)
+        //    {
+        //        p.PriorityClass = ProcessPriorityClass.High;
+        //    }*/
+        //    standardOutput = p.StandardOutput.ReadToEnd();
+        //    errorOutput = p.StandardError.ReadToEnd();
+        //    if (!p.HasExited) {
+        //        p.WaitForExit();
+        //    }
+        //    p.Close();
 
-            return new Tuple<string, string>(standardOutput, errorOutput);
-        }
-        private void RunSvnCommand(string command) {
-            log.Info("svn " + command);
+        //    return new Tuple<string, string>(standardOutput, errorOutput);
+        //}
+        //private void RunSvnCommand(string command) {
+        //    log.Info("svn " + command);
 
-            Tuple<string, string> outputs = RunCommand(this._svnPath + @"\svn.exe", command);
+        //    Tuple<string, string> outputs = RunCommand(this._svnPath + @"\svn.exe", command);
 
-            ParseSvnOuput(command, outputs.Item2);// item2 is error output
-        }
-        private void RunSvnAdminCommand(string command) {
-            log.Info("svnadmin " + command);
+        //    ParseSvnOuput(command, outputs.Item2);// item2 is error output
+        //}
+        //private void RunSvnAdminCommand(string command) {
+        //    log.Info("svnadmin " + command);
 
-            Tuple<string, string> outputs = RunCommand(this._svnPath + @"\svnadmin.exe", command);
+        //    Tuple<string, string> outputs = RunCommand(this._svnPath + @"\svnadmin.exe", command);
 
-            ParseSvnOuput(command, outputs.Item2);// item2 is error output
+        //    ParseSvnOuput(command, outputs.Item2);// item2 is error output
 
-        }
+        //}
 
-        private void ParseSvnOuput(string input, string output) {
-            if (Regex.Match(output, "^svn: warning").Success || Regex.Match(output, "^svn: avertissement").Success) {
-                log.Warn("Warning: " + output);
-                return;
-            }
-            if (output != "") {
-                throw new Exception(String.Format("svn error when executing 'svn {0}'. Exception: {1}.", input, output));
-            }
-        }
+        //private void ParseSvnOuput(string input, string output) {
+        //    if (Regex.Match(output, "^svn: warning").Success || Regex.Match(output, "^svn: avertissement").Success) {
+        //        log.Warn("Warning: " + output);
+        //        return;
+        //    }
+        //    if (output != "") {
+        //        throw new Exception(String.Format("svn error when executing 'svn {0}'. Exception: {1}.", input, output));
+        //    }
+        //}
 
-        private void ParseSvnAdminOuput(string input, string output) {
-            if (output != "") {
-                throw new Exception(String.Format("svn error when executing 'svn {0}'. Exception: {1}.", input, output));
-            }
-        }
+        //private void ParseSvnAdminOuput(string input, string output) {
+        //    if (output != "") {
+        //        throw new Exception(String.Format("svn error when executing 'svn {0}'. Exception: {1}.", input, output));
+        //    }
+        //}
 
         private string GetMappedUsername(string committer) {
             foreach (string tfsUsername in _usernameMap.Keys)

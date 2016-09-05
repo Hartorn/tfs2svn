@@ -1,33 +1,30 @@
-using Colyar.SourceControl.TeamFoundationServer;
-using log4net;
-using Microsoft.TeamFoundation.Client;
-using Microsoft.TeamFoundation.VersionControl.Client;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using log4net;
+using Microsoft.TeamFoundation.Client;
+using Microsoft.TeamFoundation.VersionControl.Client;
 
-namespace Colyar.SourceControl.MicrosoftTfsClient
-{
-    public class TfsClientProvider : TfsClientProviderBase
-    {
+namespace Colyar.SourceControl.MicrosoftTfsClient {
+    public class TfsClientProvider {
         #region Public Events
 
-        public override event ChangesetHandler BeginChangeSet;
-        public override event ChangesetHandler EndChangeSet;
-        public override event SinglePathHandler FileAdded;
-        public override event SinglePathHandler FileEdited;
-        public override event SinglePathHandler FileDeleted;
-        public override event SinglePathHandler FileUndeleted;
-        public override event SinglePathHandler FileBranched;
-        public override event DualPathHandler FileRenamed;
-        public override event SinglePathHandler FolderAdded;
-        public override event SinglePathHandler FolderDeleted;
-        public override event SinglePathHandler FolderUndeleted;
-        public override event SinglePathHandler FolderBranched;
-        public override event DualPathHandler FolderRenamed;
-        public override event ChangesetsFoundHandler ChangeSetsFound;
+        public event ChangesetHandler BeginChangeSet;
+        public event ChangesetHandler EndChangeSet;
+        public event SinglePathHandler FileAdded;
+        public event SinglePathHandler FileEdited;
+        public event SinglePathHandler FileDeleted;
+        public event SinglePathHandler FileUndeleted;
+        public event SinglePathHandler FileBranched;
+        public event DualPathHandler FileRenamed;
+        public event SinglePathHandler FolderAdded;
+        public event SinglePathHandler FolderDeleted;
+        public event SinglePathHandler FolderUndeleted;
+        public event SinglePathHandler FolderBranched;
+        public event DualPathHandler FolderRenamed;
+        public event ChangesetsFoundHandler ChangeSetsFound;
 
         #endregion
 
@@ -47,22 +44,18 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
 
         #region Public Methods
 
-        public override void Connect(string serverUri, string remotePath, string localPath, int fromChangeset, string tfsUsername, string tfsPassword, string tfsDomain)
-        {
+        public void Connect(string serverUri, string remotePath, string localPath, int fromChangeset, string tfsUsername, string tfsPassword, string tfsDomain) {
             this._serverUri = new Uri(serverUri);
             this._remotePath = remotePath;
             this._localPath = localPath;
             this._startingChangeset = fromChangeset;
 
-            try
-            {
+            try {
                 NetworkCredential tfsCredential = new NetworkCredential(tfsUsername, tfsPassword, tfsDomain);
                 //this._teamFoundationServer = new Microsoft.TeamFoundation.Client.TeamFoundationServer(this._serverUri, tfsCredential);
                 this._tfsProjectCollection = new TfsTeamProjectCollection(this._serverUri, tfsCredential);
                 this._versionControlServer = this._tfsProjectCollection.GetService<VersionControlServer>();
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 throw new Exception("Error connecting to TFS", ex);
             }
 
@@ -83,34 +76,27 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
             ChangeSetsFound = null;
         }
 
-        public override void ProcessAllChangeSets()
-        {
+        public void ProcessAllChangeSets() {
             Changeset changeset;
-            if (this._tfsProjectCollection == null)
-            {
+            if (this._tfsProjectCollection == null) {
                 throw new ArgumentException("Cannot call ProcessAllChangeSets() without Connecting first");
             }
-            foreach (int changesetId in GetChangesetIds())
-            {
+            foreach (int changesetId in GetChangesetIds()) {
                 changeset = this._versionControlServer.GetChangeset(changesetId, true, true);
 
-                if (this.BeginChangeSet != null)
-                {
+                if (this.BeginChangeSet != null) {
                     this.BeginChangeSet(changeset.ChangesetId, changeset.Committer, changeset.Comment, changeset.CreationDate);
                 }
-                foreach (Change change in OrderChanges(changeset.Changes))
-                {
+                foreach (Change change in OrderChanges(changeset.Changes)) {
                     ProcessChange(changeset, change);
                 }
-                if (this.EndChangeSet != null)
-                {
+                if (this.EndChangeSet != null) {
                     this.EndChangeSet(changeset.ChangesetId, changeset.Committer, changeset.Comment, changeset.CreationDate);
                 }
             }
         }
 
-        private IEnumerable OrderChanges(Change[] changes)
-        {
+        private IEnumerable OrderChanges(Change[] changes) {
             ArrayList Undelete = new ArrayList();
             ArrayList Edit = new ArrayList();
             ArrayList Rename = new ArrayList();
@@ -122,10 +108,8 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
             ArrayList Add_FS = new ArrayList();
             ArrayList Delete_FS = new ArrayList();
 
-            foreach (Change change in changes)
-            {
-                switch (change.ChangeType & TfsClientProvider.fullMask)
-                {
+            foreach (Change change in changes) {
+                switch (change.ChangeType & TfsClientProvider.fullMask) {
                     case ChangeType.SourceRename | ChangeType.Delete:
                         Delete_FS.Add(change);
                         break;
@@ -184,8 +168,7 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
             l.AddRange(Add_FS);
 
             log.Info("Ordered Changes - Begin");
-            foreach (Change change in l)
-            {
+            foreach (Change change in l) {
                 log.Info(String.Format("Change - Item: {0} ChangeType: {1}", change.Item, change.ChangeType));
             }
             log.Info("Ordered Changes - End");
@@ -196,37 +179,30 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
 
         #region Private Methods
 
-        private IEnumerable<int> GetChangesetIds()
-        {
+        private IEnumerable<int> GetChangesetIds() {
             SortedList sortedChangesets = new SortedList();
             List<int> changesetsIds = new List<int>();
 
-            try
-            {
+            try {
                 ChangesetVersionSpec versionFrom = new ChangesetVersionSpec(_startingChangeset);
                 IEnumerable changesets = this._versionControlServer.QueryHistory(this._remotePath, VersionSpec.Latest, 0, RecursionType.Full, null, versionFrom, VersionSpec.Latest, int.MaxValue, false, false);
 
-                foreach (Changeset changeset in changesets)
-                {
+                foreach (Changeset changeset in changesets) {
                     changesetsIds.Add(changeset.ChangesetId);
                     //sortedChangesets.Add(changeset.ChangesetId, changeset);
                 }
                 changesetsIds.Sort();
                 if (this.ChangeSetsFound != null)
                     this.ChangeSetsFound(changesetsIds.Count); //notify the number of found changesets (used in progressbar)
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 throw new Exception("Error while executing TFS QueryHistory", ex);
             }
 
             return changesetsIds;
         }
 
-        private void ProcessChange(Changeset changeset, Change change)
-        {
-            switch (change.Item.ItemType)
-            {
+        private void ProcessChange(Changeset changeset, Change change) {
+            switch (change.Item.ItemType) {
                 case ItemType.File:
                     // Process file change.
                     ProcessFileChange(changeset, change);
@@ -238,10 +214,8 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
             }
         }
 
-        private void ProcessFileChange(Changeset changeset, Change change)
-        {
-            switch (change.ChangeType & TfsClientProvider.changeMask)
-            {
+        private void ProcessFileChange(Changeset changeset, Change change) {
+            switch (change.ChangeType & TfsClientProvider.changeMask) {
                 case ChangeType.Undelete:
                 case ChangeType.Undelete | ChangeType.Edit:
                     // Undelete file (really just an add)
@@ -285,10 +259,8 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
             }
         }
 
-        private void ProcessFolderChange(Changeset changeset, Change change)
-        {
-            switch (change.ChangeType & TfsClientProvider.changeMask)
-            {
+        private void ProcessFolderChange(Changeset changeset, Change change) {
+            switch (change.ChangeType & TfsClientProvider.changeMask) {
                 case ChangeType.Undelete:
                     // Undelete folder (really just an add)
                     UndeleteFolder(changeset, change);
@@ -319,8 +291,7 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
             }
         }
 
-        private void AddFile(Changeset changeset, Change change)
-        {
+        private void AddFile(Changeset changeset, Change change) {
             string itemPath = GetItemPath(change.Item);
             DownloadItemFile(change, itemPath);
 
@@ -328,8 +299,7 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
                 this.FileAdded(changeset.ChangesetId, itemPath, changeset.Committer, changeset.Comment, changeset.CreationDate);
         }
 
-        private void BranchFile(Changeset changeset, Change change)
-        {
+        private void BranchFile(Changeset changeset, Change change) {
             string itemPath = GetItemPath(change.Item);
             DownloadItemFile(change, itemPath);
 
@@ -337,8 +307,7 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
                 this.FileBranched(changeset.ChangesetId, itemPath, changeset.Committer, changeset.Comment, changeset.CreationDate);
         }
 
-        private void UndeleteFile(Changeset changeset, Change change)
-        {
+        private void UndeleteFile(Changeset changeset, Change change) {
             string itemPath = GetItemPath(change.Item);
             DownloadItemFile(change, itemPath);
 
@@ -346,16 +315,14 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
                 this.FileUndeleted(changeset.ChangesetId, itemPath, changeset.Committer, changeset.Comment, changeset.CreationDate);
         }
 
-        private void DeleteFile(Changeset changeset, Change change)
-        {
+        private void DeleteFile(Changeset changeset, Change change) {
             string itemPath = GetItemPath(change.Item);
 
             if (this.FileDeleted != null)
                 this.FileDeleted(changeset.ChangesetId, itemPath, changeset.Committer, changeset.Comment, changeset.CreationDate);
         }
 
-        private void EditFile(Changeset changeset, Change change)
-        {
+        private void EditFile(Changeset changeset, Change change) {
             string itemPath = GetItemPath(change.Item);
             DownloadItemFile(change, itemPath);
 
@@ -363,21 +330,16 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
                 this.FileEdited(changeset.ChangesetId, itemPath, changeset.Committer, changeset.Comment, changeset.CreationDate);
         }
 
-        private void DownloadItemFile(Change change, string targetPath)
-        {
-            try
-            {
+        private void DownloadItemFile(Change change, string targetPath) {
+            try {
                 //File.Delete is not needed (this is handled inside DownloadFile)
                 change.Item.DownloadFile(targetPath);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 throw new Exception(String.Format("Error while downloading file '{0}' in Changeset #{1}.", targetPath, change.Item.ChangesetId), ex);
             }
         }
 
-        private void RenameFile(Changeset changeset, Change change)
-        {
+        private void RenameFile(Changeset changeset, Change change) {
             string oldPath = GetItemPath(GetPreviousItem(change.Item));
             string newPath = GetItemPath(change.Item);
 
@@ -385,8 +347,7 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
                 this.FileRenamed(changeset.ChangesetId, oldPath, newPath, changeset.Committer, changeset.Comment, changeset.CreationDate);
         }
 
-        private void AddFolder(Changeset changeset, Change change)
-        {
+        private void AddFolder(Changeset changeset, Change change) {
             string itemPath = GetItemPath(change.Item);
             Directory.CreateDirectory(itemPath);
 
@@ -394,8 +355,7 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
                 this.FolderAdded(changeset.ChangesetId, itemPath, changeset.Committer, changeset.Comment, changeset.CreationDate);
         }
 
-        private void BranchFolder(Changeset changeset, Change change)
-        {
+        private void BranchFolder(Changeset changeset, Change change) {
             string itemPath = GetItemPath(change.Item);
             Directory.CreateDirectory(itemPath);
 
@@ -403,8 +363,7 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
                 this.FolderBranched(changeset.ChangesetId, itemPath, changeset.Committer, changeset.Comment, changeset.CreationDate);
         }
 
-        private void UndeleteFolder(Changeset changeset, Change change)
-        {
+        private void UndeleteFolder(Changeset changeset, Change change) {
             string itemPath = GetItemPath(change.Item);
             Directory.CreateDirectory(itemPath);
 
@@ -412,16 +371,14 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
                 this.FolderUndeleted(changeset.ChangesetId, itemPath, changeset.Committer, changeset.Comment, changeset.CreationDate);
         }
 
-        private void DeleteFolder(Changeset changeset, Change change)
-        {
+        private void DeleteFolder(Changeset changeset, Change change) {
             string itemPath = GetItemPath(change.Item);
 
             if (this.FolderDeleted != null)
                 this.FolderDeleted(changeset.ChangesetId, itemPath, changeset.Committer, changeset.Comment, changeset.CreationDate);
         }
 
-        private void RenameFolder(Changeset changeset, Change change)
-        {
+        private void RenameFolder(Changeset changeset, Change change) {
             string oldPath = GetItemPath(GetPreviousItem(change.Item));
             string newPath = GetItemPath(change.Item);
 
@@ -429,8 +386,7 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
                 this.FolderRenamed(changeset.ChangesetId, oldPath, newPath, changeset.Committer, changeset.Comment, changeset.CreationDate);
         }
 
-        private string GetItemPath(Item item)
-        {
+        private string GetItemPath(Item item) {
             if (!item.ServerItem.StartsWith(this._remotePath, StringComparison.OrdinalIgnoreCase))
                 throw new Exception(item.ServerItem + " is not contained in " + this._remotePath);
 
@@ -438,23 +394,18 @@ namespace Colyar.SourceControl.MicrosoftTfsClient
             return Path.Combine(this._localPath, serverRelativePath);
         }
 
-        private Item GetPreviousItem(Item item)
-        {
-            try
-            {
+        private Item GetPreviousItem(Item item) {
+            try {
                 IEnumerable changesets = item.VersionControlServer.QueryHistory(
                     item.ServerItem, new ChangesetVersionSpec(item.ChangesetId), 0, RecursionType.None, null,
                     new ChangesetVersionSpec(1), new ChangesetVersionSpec(item.ChangesetId - 1), int.MaxValue,
                     true, false);
 
-                foreach (Changeset changeset in changesets)
-                {
+                foreach (Changeset changeset in changesets) {
                     return changeset.Changes[0].Item;
                 }
                 return item.VersionControlServer.GetItem(item.ItemId, item.ChangesetId - 1, false);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 throw new Exception("Error while executing GetPreviousItem", ex);
             }
         }

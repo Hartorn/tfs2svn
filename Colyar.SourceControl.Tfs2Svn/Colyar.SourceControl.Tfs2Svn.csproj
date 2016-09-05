@@ -159,13 +159,13 @@
     <Compile Include="Tfs2SvnConverter.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Colyar.SourceControl.MicrosoftTfsClient\Colyar.SourceControl.MicrosoftTfsClient.csproj">
+      <Project>{6A457FA8-2A9F-41C4-B45C-D98DAE10BDA6}</Project>
+      <Name>Colyar.SourceControl.MicrosoftTfsClient</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Colyar.SourceControl.Subversion\Colyar.SourceControl.Subversion.csproj">
       <Project>{AD47F42D-1D9D-4C1A-B216-B82E652DEC5E}</Project>
       <Name>Colyar.SourceControl.Subversion</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Colyar.SourceControl.TeamFoundationServer\Colyar.SourceControl.TeamFoundationServer.csproj">
-      <Project>{8CC7D187-30BF-49D5-ACD6-A4415B71EE25}</Project>
-      <Name>Colyar.SourceControl.TeamFoundationServer</Name>
     </ProjectReference>
     <ProjectReference Include="..\Colyar.SourceControl\Colyar.SourceControl.csproj">
       <Project>{46B5216D-37A6-4B2C-9333-D591EFB4C08E}</Project>

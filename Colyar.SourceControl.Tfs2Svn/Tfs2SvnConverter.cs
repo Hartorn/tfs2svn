@@ -1,20 +1,20 @@
-using Colyar.SourceControl.Subversion;
-using Colyar.SourceControl.TeamFoundationServer;
-using log4net;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
+using Colyar.SourceControl.MicrosoftTfsClient;
+using Colyar.SourceControl.Subversion;
+using log4net;
 
-namespace Colyar.SourceControl.Tfs2Svn
-{
-    public class Tfs2SvnConverter
-    {
+namespace Colyar.SourceControl.Tfs2Svn {
+    public class Tfs2SvnConverter {
         #region Private Variables
 
         //private readonly TfsExporter _tfsExporter;
         private readonly SvnImporter _svnImporter;
         private static readonly ILog log = LogManager.GetLogger(typeof(Tfs2SvnConverter));
 
+        private TfsClientProvider _tfsClient;
         private string _tfsServer;
         private string _tfsRepository;
         private string _svnRepository;
@@ -33,16 +33,15 @@ namespace Colyar.SourceControl.Tfs2Svn
         #region Public Constructor
 
         public Tfs2SvnConverter(string tfsPath, string tfsRepo, string svnPath, bool createSvnFileRepository, int fromChangeset, string workingCopyPath, string svnBinFolder, bool doInitialCheckout)
-            : this(tfsPath, svnPath, tfsRepo, createSvnFileRepository, fromChangeset, workingCopyPath, svnBinFolder, doInitialCheckout, null, null, null) { }
+            : this(tfsPath, svnPath, tfsRepo, createSvnFileRepository, fromChangeset, workingCopyPath, svnBinFolder, doInitialCheckout, null, null, null, Encoding.ASCII) { }
 
-        public Tfs2SvnConverter(string tfsPath, string tfsRepo, string svnPath, bool createSvnFileRepository, int fromChangeset, string workingCopyPath, string svnBinFolder, bool doInitialCheckout, string tfsUsername, string tfsPassword, string tfsDomain)
-        {
+        public Tfs2SvnConverter(string tfsPath, string tfsRepo, string svnPath, bool createSvnFileRepository, int fromChangeset, string workingCopyPath, string svnBinFolder, bool doInitialCheckout, string tfsUsername, string tfsPassword, string tfsDomain, Encoding encoding) {
             ParsePaths(tfsPath, tfsRepo, svnPath);
-
+            this._tfsClient = new TfsClientProvider();
             //this._tfsExporter = new TfsExporter(this._tfsServer, this._tfsRepository, workingCopyPath, fromChangeset, tfsUsername, tfsPassword, tfsDomain);
-            TfsClient.Provider.Connect(this._tfsServer, this._tfsRepository, workingCopyPath, fromChangeset, tfsUsername, tfsPassword, tfsDomain);
+            this._tfsClient.Connect(this._tfsServer, this._tfsRepository, workingCopyPath, fromChangeset, tfsUsername, tfsPassword, tfsDomain);
 
-            this._svnImporter = new SvnImporter(this._svnRepository, workingCopyPath, svnBinFolder);
+            this._svnImporter = new SvnImporter(this._svnRepository, workingCopyPath, svnBinFolder, encoding);
             _createSvnFileRepository = createSvnFileRepository;
             _doInitialCheckout = doInitialCheckout;
             _workingCopyPath = workingCopyPath;
@@ -54,87 +53,71 @@ namespace Colyar.SourceControl.Tfs2Svn
 
         #region Public Property Events
 
-        public event ChangesetHandler BeginChangeSet
-        {
-            add { TfsClient.Provider.BeginChangeSet += value; }
-            remove { TfsClient.Provider.BeginChangeSet -= value; }
+        public event ChangesetHandler BeginChangeSet {
+            add { this._tfsClient.BeginChangeSet += value; }
+            remove { this._tfsClient.BeginChangeSet -= value; }
         }
-        public event ChangesetsFoundHandler ChangeSetsFound
-        {
-            add { TfsClient.Provider.ChangeSetsFound += value; }
-            remove { TfsClient.Provider.ChangeSetsFound -= value; }
+        public event ChangesetsFoundHandler ChangeSetsFound {
+            add { this._tfsClient.ChangeSetsFound += value; }
+            remove { this._tfsClient.ChangeSetsFound -= value; }
         }
-        public event ChangesetHandler EndChangeSet
-        {
-            add { TfsClient.Provider.EndChangeSet += value; }
-            remove { TfsClient.Provider.EndChangeSet -= value; }
+        public event ChangesetHandler EndChangeSet {
+            add { this._tfsClient.EndChangeSet += value; }
+            remove { this._tfsClient.EndChangeSet -= value; }
         }
         public event SvnAdminEventHandler SvnAdminEvent;
-        public event SinglePathHandler FileAdded
-        {
-            add { TfsClient.Provider.FileAdded += value; }
-            remove { TfsClient.Provider.FileAdded -= value; }
+        public event SinglePathHandler FileAdded {
+            add { this._tfsClient.FileAdded += value; }
+            remove { this._tfsClient.FileAdded -= value; }
         }
-        public event SinglePathHandler FileBranched
-        {
-            add { TfsClient.Provider.FileBranched += value; }
-            remove { TfsClient.Provider.FileBranched -= value; }
+        public event SinglePathHandler FileBranched {
+            add { this._tfsClient.FileBranched += value; }
+            remove { this._tfsClient.FileBranched -= value; }
         }
-        public event SinglePathHandler FileDeleted
-        {
-            add { TfsClient.Provider.FileDeleted += value; }
-            remove { TfsClient.Provider.FileDeleted -= value; }
+        public event SinglePathHandler FileDeleted {
+            add { this._tfsClient.FileDeleted += value; }
+            remove { this._tfsClient.FileDeleted -= value; }
         }
-        public event SinglePathHandler FileEdited
-        {
-            add { TfsClient.Provider.FileEdited += value; }
-            remove { TfsClient.Provider.FileEdited -= value; }
+        public event SinglePathHandler FileEdited {
+            add { this._tfsClient.FileEdited += value; }
+            remove { this._tfsClient.FileEdited -= value; }
         }
-        public event DualPathHandler FileRenamed
-        {
-            add { TfsClient.Provider.FileRenamed += value; }
-            remove { TfsClient.Provider.FileRenamed -= value; }
+        public event DualPathHandler FileRenamed {
+            add { this._tfsClient.FileRenamed += value; }
+            remove { this._tfsClient.FileRenamed -= value; }
         }
-        public event SinglePathHandler FileUndeleted
-        {
-            add { TfsClient.Provider.FileUndeleted += value; }
-            remove { TfsClient.Provider.FileUndeleted -= value; }
+        public event SinglePathHandler FileUndeleted {
+            add { this._tfsClient.FileUndeleted += value; }
+            remove { this._tfsClient.FileUndeleted -= value; }
         }
-        public event SinglePathHandler FolderAdded
-        {
-            add { TfsClient.Provider.FolderAdded += value; }
-            remove { TfsClient.Provider.FolderAdded -= value; }
+        public event SinglePathHandler FolderAdded {
+            add { this._tfsClient.FolderAdded += value; }
+            remove { this._tfsClient.FolderAdded -= value; }
         }
-        public event SinglePathHandler FolderBranched
-        {
-            add { TfsClient.Provider.FolderBranched += value; }
-            remove { TfsClient.Provider.FolderBranched -= value; }
+        public event SinglePathHandler FolderBranched {
+            add { this._tfsClient.FolderBranched += value; }
+            remove { this._tfsClient.FolderBranched -= value; }
         }
-        public event SinglePathHandler FolderDeleted
-        {
-            add { TfsClient.Provider.FolderDeleted += value; }
-            remove { TfsClient.Provider.FolderDeleted -= value; }
+        public event SinglePathHandler FolderDeleted {
+            add { this._tfsClient.FolderDeleted += value; }
+            remove { this._tfsClient.FolderDeleted -= value; }
         }
-        public event DualPathHandler FolderRenamed
-        {
-            add { TfsClient.Provider.FolderRenamed += value; }
-            remove { TfsClient.Provider.FolderRenamed -= value; }
+        public event DualPathHandler FolderRenamed {
+            add { this._tfsClient.FolderRenamed += value; }
+            remove { this._tfsClient.FolderRenamed -= value; }
         }
-        public event SinglePathHandler FolderUndeleted
-        {
-            add { TfsClient.Provider.FolderUndeleted += value; }
-            remove { TfsClient.Provider.FolderUndeleted -= value; }
+        public event SinglePathHandler FolderUndeleted {
+            add { this._tfsClient.FolderUndeleted += value; }
+            remove { this._tfsClient.FolderUndeleted -= value; }
         }
 
         #endregion
 
         #region Public Methods
 
-        public void Convert()
-        {
+        public void Convert() {
             //see if repository should be created (e.g. file:///c:\myrepository)
-            if (_createSvnFileRepository && this._svnRepository.StartsWith("file:///"))
-            {
+            if (_createSvnFileRepository && this._svnRepository.StartsWith("file:///")) {
                 string localSvnPath = this._svnRepository.Replace("file:///", String.Empty).Replace("/", "\\");
 
                 if (!String.IsNullOrEmpty(localSvnPath))
@@ -148,8 +131,7 @@ namespace Colyar.SourceControl.Tfs2Svn
 
                 //add empty Pre-RevisionPropertyChange hookfile (to make it possible to use propset)
                 string hookPath = localSvnPath + "/hooks/pre-revprop-change.cmd";
-                if (!File.Exists(hookPath))
-                {
+                if (!File.Exists(hookPath)) {
                     FileStream fs = File.Create(hookPath);
                     fs.Close();
                 }
@@ -160,17 +142,15 @@ namespace Colyar.SourceControl.Tfs2Svn
             }
 
             //initial checkout?
-            if (_doInitialCheckout)
-            {
+            if (_doInitialCheckout) {
                 DeletePath(_workingCopyPath);
                 this._svnImporter.Checkout();
             }
 
             //now read and process all TFS changesets
-            TfsClient.Provider.ProcessAllChangeSets();
+            this._tfsClient.ProcessAllChangeSets();
         }
-        public void AddUsernameMapping(string tfsUsername, string svnUsername)
-        {
+        public void AddUsernameMapping(string tfsUsername, string svnUsername) {
             this._svnImporter.AddUsernameMapping(tfsUsername, svnUsername);
         }
 
@@ -178,25 +158,23 @@ namespace Colyar.SourceControl.Tfs2Svn
 
         #region Private Methods
 
-        private void HookupTfsExporterEventHandlers()
-        {
-            TfsClient.Provider.BeginChangeSet += tfsExporter_BeginChangeSet;
-            TfsClient.Provider.EndChangeSet += tfsExporter_EndChangeSet;
-            TfsClient.Provider.FileAdded += tfsExporter_FileAdded;
-            TfsClient.Provider.FileDeleted += tfsExporter_FileDeleted;
-            TfsClient.Provider.FileEdited += tfsExporter_FileEdited;
-            TfsClient.Provider.FileRenamed += tfsExporter_FileRenamed;
-            TfsClient.Provider.FileBranched += tfsExporter_FileBranched;
-            TfsClient.Provider.FileUndeleted += tfsExporter_FileUndeleted;
-            TfsClient.Provider.FolderAdded += tfsExporter_FolderAdded;
-            TfsClient.Provider.FolderDeleted += tfsExporter_FolderDeleted;
-            TfsClient.Provider.FolderRenamed += tfsExporter_FolderRenamed;
-            TfsClient.Provider.FolderBranched += tfsExporter_FolderBranched;
-            TfsClient.Provider.FolderUndeleted += tfsExporter_FolderUndeleted;
+        private void HookupTfsExporterEventHandlers() {
+            this._tfsClient.BeginChangeSet += tfsExporter_BeginChangeSet;
+            this._tfsClient.EndChangeSet += tfsExporter_EndChangeSet;
+            this._tfsClient.FileAdded += tfsExporter_FileAdded;
+            this._tfsClient.FileDeleted += tfsExporter_FileDeleted;
+            this._tfsClient.FileEdited += tfsExporter_FileEdited;
+            this._tfsClient.FileRenamed += tfsExporter_FileRenamed;
+            this._tfsClient.FileBranched += tfsExporter_FileBranched;
+            this._tfsClient.FileUndeleted += tfsExporter_FileUndeleted;
+            this._tfsClient.FolderAdded += tfsExporter_FolderAdded;
+            this._tfsClient.FolderDeleted += tfsExporter_FolderDeleted;
+            this._tfsClient.FolderRenamed += tfsExporter_FolderRenamed;
+            this._tfsClient.FolderBranched += tfsExporter_FolderBranched;
+            this._tfsClient.FolderUndeleted += tfsExporter_FolderUndeleted;
         }
 
-        private void ParsePaths(string tfsPath, string tfsRepo, string svnPath)
-        {
+        private void ParsePaths(string tfsPath, string tfsRepo, string svnPath) {
             this._tfsServer = ParseTfsServer(tfsPath);
             log.Info("TFS SERVER: " + this._tfsServer);
 
@@ -207,22 +185,18 @@ namespace Colyar.SourceControl.Tfs2Svn
             log.Info("SVN REPO: " + this._svnRepository);
         }
 
-        private string ParseTfsServer(string tfsPath)
-        {
+        private string ParseTfsServer(string tfsPath) {
             return tfsPath;
         }
-        private string ParseTfsRepository(string tfsPath)
-        {
+        private string ParseTfsRepository(string tfsPath) {
             return tfsPath;
         }
-        private string ParseSvnRepository(string svnPath)
-        {
+        private string ParseSvnRepository(string svnPath) {
             return svnPath;
         }
 
 
-        private void DeletePath(string path)
-        {
+        private void DeletePath(string path) {
             if (!Directory.Exists(path))
                 return;
 
@@ -239,19 +213,14 @@ namespace Colyar.SourceControl.Tfs2Svn
             Directory.Delete(path, true);
         }
 
-        private string GetBackupFilename(string path)
-        {
+        private string GetBackupFilename(string path) {
             return path.Insert(path.LastIndexOf(@"\") + 1, "___temp");
         }
 
-        private string FixPreviouslyRenamedFolder(string path)
-        {
-            if (path != null)
-            {
-                foreach (string preRenameFolder in renamedFolders.Keys)
-                {
-                    if (path.ToLowerInvariant().StartsWith(preRenameFolder.ToLowerInvariant()))
-                    {
+        private string FixPreviouslyRenamedFolder(string path) {
+            if (path != null) {
+                foreach (string preRenameFolder in renamedFolders.Keys) {
+                    if (path.ToLowerInvariant().StartsWith(preRenameFolder.ToLowerInvariant())) {
                         path = path.Remove(0, preRenameFolder.Length).Insert(0, renamedFolders[preRenameFolder]);
                         //note: do not break now: each next preRenameFolder must also be checked
                     }
@@ -265,19 +234,15 @@ namespace Colyar.SourceControl.Tfs2Svn
 
         #region Event Handlers
 
-        void tfsExporter_BeginChangeSet(int changeset, string committer, string comment, DateTime date)
-        {
+        void tfsExporter_BeginChangeSet(int changeset, string committer, string comment, DateTime date) {
             renamedFolders.Clear();
             fileSwapBackups.Clear();
         }
 
-        void tfsExporter_EndChangeSet(int changeset, string committer, string comment, DateTime date)
-        {
+        void tfsExporter_EndChangeSet(int changeset, string committer, string comment, DateTime date) {
             //check if cyclic swapped files were all handled
-            if (fileSwapBackups.Count > 0)
-            {
-                foreach (string destinationPath in fileSwapBackups.Keys)
-                {
+            if (fileSwapBackups.Count > 0) {
+                foreach (string destinationPath in fileSwapBackups.Keys) {
                     string sourcePath = fileSwapBackups[destinationPath];
 
                     if (!fileSwapBackups.ContainsKey(sourcePath))
@@ -291,8 +256,7 @@ namespace Colyar.SourceControl.Tfs2Svn
             this._svnImporter.Commit(comment, committer, date, changeset);
         }
 
-        void tfsExporter_FileAdded(int changeset, string path, string committer, string comment, DateTime date)
-        {
+        void tfsExporter_FileAdded(int changeset, string path, string committer, string comment, DateTime date) {
             log.Info("Adding file " + path);
 
             if (!File.Exists(path))
@@ -301,21 +265,18 @@ namespace Colyar.SourceControl.Tfs2Svn
             this._svnImporter.Add(path);
         }
 
-        void tfsExporter_FileEdited(int changeset, string path, string committer, string comment, DateTime date)
-        {
+        void tfsExporter_FileEdited(int changeset, string path, string committer, string comment, DateTime date) {
             log.Info("Editing file " + path);
         }
 
-        void tfsExporter_FileDeleted(int changeset, string path, string committer, string comment, DateTime date)
-        {
+        void tfsExporter_FileDeleted(int changeset, string path, string committer, string comment, DateTime date) {
             log.Info("Deleting file " + path);
 
             if (File.Exists(path))
                 this._svnImporter.Remove(path, false);
         }
 
-        void tfsExporter_FileBranched(int changeset, string path, string committer, string comment, DateTime date)
-        {
+        void tfsExporter_FileBranched(int changeset, string path, string committer, string comment, DateTime date) {
             log.Info("Adding branched file " + path);
 
             if (!File.Exists(path))
@@ -324,8 +285,7 @@ namespace Colyar.SourceControl.Tfs2Svn
             this._svnImporter.Add(path);
         }
 
-        void tfsExporter_FileUndeleted(int changeset, string path, string committer, string comment, DateTime date)
-        {
+        void tfsExporter_FileUndeleted(int changeset, string path, string committer, string comment, DateTime date) {
             log.Info("Adding undeleted file " + path);
 
             if (!File.Exists(path))
@@ -334,8 +294,7 @@ namespace Colyar.SourceControl.Tfs2Svn
             this._svnImporter.Add(path);
         }
 
-        void tfsExporter_FileRenamed(int changeset, string oldPath, string newPath, string committer, string comment, DateTime date)
-        {
+        void tfsExporter_FileRenamed(int changeset, string oldPath, string newPath, string committer, string comment, DateTime date) {
             log.Info(String.Format("tfs2svn: Renaming file {0} to {1}", oldPath, newPath));
 
             oldPath = FixPreviouslyRenamedFolder(oldPath);
@@ -346,22 +305,15 @@ namespace Colyar.SourceControl.Tfs2Svn
             if (!File.Exists(oldPath))
                 throw new Exception("File error in tfsExporter_FileRenamed");
 
-            if (!File.Exists(newPath))
-            {
+            if (!File.Exists(newPath)) {
                 this._svnImporter.MoveFile(oldPath, newPath, false);
-            }
-            else
-            {
+            } else {
                 //check if no file exists with same case (i.e.: in that case the file was renamed automatically when a parent-folder was renamed)
-                if (oldPath != newPath)
-                {
-                    if (oldPath.ToLowerInvariant() == newPath.ToLowerInvariant())
-                    {
+                if (oldPath != newPath) {
+                    if (oldPath.ToLowerInvariant() == newPath.ToLowerInvariant()) {
                         //rename with only casing different: do a server-side rename
                         this._svnImporter.MoveServerSide(oldPath, newPath, changeset, committer, date);
-                    }
-                    else
-                    {
+                    } else {
                         //this should be a file-swapping!!
                         log.Warn(String.Format("tfsExporter_FileRenamed: rename of file '{0}' to existing file '{1}'. This is only allowed in case of a 'filename-swapping'. Please check if this was the case.", oldPath, newPath));
 
@@ -371,13 +323,10 @@ namespace Colyar.SourceControl.Tfs2Svn
                         string tempNewPath = GetBackupFilename(newPath);
                         File.Copy(newPath, tempNewPath);
 
-                        if (fileSwapBackups.ContainsKey(oldPath))
-                        {
+                        if (fileSwapBackups.ContainsKey(oldPath)) {
                             string tempOldPath = GetBackupFilename(oldPath);
                             File.Copy(tempOldPath, newPath, true);
-                        }
-                        else
-                        {
+                        } else {
                             File.Copy(oldPath, newPath, true);
                         }
 
@@ -387,8 +336,7 @@ namespace Colyar.SourceControl.Tfs2Svn
             }
         }
 
-        void tfsExporter_FolderAdded(int changeset, string path, string committer, string comment, DateTime date)
-        {
+        void tfsExporter_FolderAdded(int changeset, string path, string committer, string comment, DateTime date) {
             log.Info(String.Format("Adding folder {0}", path));
 
             if (!Directory.Exists(path))
@@ -398,19 +346,15 @@ namespace Colyar.SourceControl.Tfs2Svn
             //this._svnImporter.Commit(comment, committer, date, changeset);
         }
 
-        void tfsExporter_FolderDeleted(int changeset, string path, string committer, string comment, DateTime date)
-        {
+        void tfsExporter_FolderDeleted(int changeset, string path, string committer, string comment, DateTime date) {
             log.Info(String.Format("Deleting folder {0}", path));
 
             if (Directory.Exists(path) && path != _workingCopyPath) //cannot delete workingcopy root-folder
             {
                 //Try to remove the path without forcing it.  
-                try
-                {
+                try {
                     this._svnImporter.Remove(path, true);
-                }
-                catch (Exception ex)
-                {
+                } catch (Exception ex) {
                     this._svnImporter.CleanUp(path);
 
                     log.Info(String.Format("Could not remove the path with normal methods. \n{0}", ex.Message));
@@ -421,8 +365,7 @@ namespace Colyar.SourceControl.Tfs2Svn
             }
         }
 
-        void tfsExporter_FolderBranched(int changeset, string path, string committer, string comment, DateTime date)
-        {
+        void tfsExporter_FolderBranched(int changeset, string path, string committer, string comment, DateTime date) {
             log.Info(String.Format("Adding branched folder {0}", path));
 
             if (!Directory.Exists(path))
@@ -432,8 +375,7 @@ namespace Colyar.SourceControl.Tfs2Svn
             //this._svnImporter.Commit(comment, committer, date, changeset);
         }
 
-        void tfsExporter_FolderUndeleted(int changeset, string path, string committer, string comment, DateTime date)
-        {
+        void tfsExporter_FolderUndeleted(int changeset, string path, string committer, string comment, DateTime date) {
             log.Info(String.Format("Adding undeleted folder {0}", path));
 
             if (!Directory.Exists(path))
@@ -443,8 +385,7 @@ namespace Colyar.SourceControl.Tfs2Svn
             //this._svnImporter.Commit(comment, committer, date, changeset);
         }
 
-        void tfsExporter_FolderRenamed(int changeset, string oldPath, string newPath, string committer, string comment, DateTime date)
-        {
+        void tfsExporter_FolderRenamed(int changeset, string oldPath, string newPath, string committer, string comment, DateTime date) {
             log.Info(String.Format("tfs2svn: Renaming folder {0} to {1}", oldPath, newPath));
 
             oldPath = FixPreviouslyRenamedFolder(oldPath);
@@ -452,24 +393,19 @@ namespace Colyar.SourceControl.Tfs2Svn
             if (oldPath == newPath)
                 return; //no need for a rename
 
-            if (!Directory.Exists(oldPath))
-            {
-                if (Directory.Exists(newPath))
-                {
+            if (!Directory.Exists(oldPath)) {
+                if (Directory.Exists(newPath)) {
                     // This can happen when we tried applying the current change set earlier and it
                     // failed in the middle of applying the changeset.
                     renamedFolders.Add(oldPath, newPath);
                     return;
-                }
-                else
-                {
+                } else {
                     throw new Exception("Folder error in tfsExporter_FolderRenamed");
                 }
             }
 
             //rename to an existing directory is only allowed when the casing of the folder-name was changed 
-            if (Directory.Exists(newPath) && oldPath.ToLowerInvariant() != newPath.ToLowerInvariant())
-            {
+            if (Directory.Exists(newPath) && oldPath.ToLowerInvariant() != newPath.ToLowerInvariant()) {
                 // Ignore. We've seen a TFS changeset like this:
                 // 1. Folder A does exist
                 // 2. The changeset adds folder A

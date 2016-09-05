@@ -4,14 +4,11 @@ using System.Text.RegularExpressions;
 using Colyar.SourceControl.Tfs2Svn;
 using tfs2svn.Console.Properties;
 
-namespace tfs2svn.Console
-{
-    class Program
-    {
-        private static readonly StreamWriter errorLog = new StreamWriter("error_log.txt"); 
+namespace tfs2svn.Console {
+    class Program {
+        private static readonly StreamWriter errorLog = new StreamWriter("error_log.txt");
 
-        static void Main(string[] args)
-        {
+        static void Main(string[] args) {
 #if DEBUG
             // Testing (REMOVE FOR RELEASE)---------------
             args = new string[2];
@@ -19,8 +16,7 @@ namespace tfs2svn.Console
             args[1] = @"file:///C:/svn/AMMPS";
             // ------------------------------------------
 #endif
-            switch(args.Length)
-            {
+            switch (args.Length) {
                 case 1:
                     Convert(args[0]);
                     break;
@@ -35,8 +31,7 @@ namespace tfs2svn.Console
 
         #region Private Methods
 
-        private static void Convert(string tfsPath, string tfsRepo, string svnPath)
-        {
+        private static void Convert(string tfsPath, string tfsRepo, string svnPath) {
             string workingCopyPath = Path.GetTempPath() + "tfs2svn";
             //string svnBinFolder = @"C:\Program Files\Subversion\bin";
             string svnBinFolder = Settings.Default.SvnBinFolder;
@@ -45,15 +40,13 @@ namespace tfs2svn.Console
             tfs2svnConverter.Convert();
         }
 
-        private static void Convert(string configPath)
-        {
+        private static void Convert(string configPath) {
             Tfs2SvnConverter tfs2svnConverter = ParseConfigurationFile(configPath);
             HookupEventHandlers(tfs2svnConverter);
             tfs2svnConverter.Convert();
         }
 
-        private static void PrintUsage()
-        {
+        private static void PrintUsage() {
             System.Console.WriteLine("--------------------------------------------");
             System.Console.WriteLine("Usage:");
             System.Console.WriteLine("--------------------------------------------");
@@ -62,14 +55,12 @@ namespace tfs2svn.Console
             System.Console.WriteLine(">tfs2svn config.txt");
         }
 
-        private static void HookupEventHandlers(Tfs2SvnConverter tfs2svnConverter)
-        {
+        private static void HookupEventHandlers(Tfs2SvnConverter tfs2svnConverter) {
             tfs2svnConverter.BeginChangeSet += BeginChangeSet;
             tfs2svnConverter.EndChangeSet += EndChangeSet;
         }
 
-        private static Tfs2SvnConverter ParseConfigurationFile(string path)
-        {
+        private static Tfs2SvnConverter ParseConfigurationFile(string path) {
             string fileContents = new StreamReader(path).ReadToEnd();
 
             string svnPath = GetSvnPath(fileContents);
@@ -79,22 +70,20 @@ namespace tfs2svn.Console
             string workingCopyPath = Path.GetTempPath() + "tfs2svn";
             //string svnBinFolder = @"C:\Program Files\Subversion\bin";
             string svnBinFolder = Settings.Default.SvnBinFolder;
-            Tfs2SvnConverter tfs2svnConverter = new Tfs2SvnConverter(tfsPath,tfsRepo, svnPath, overwrite, 1, workingCopyPath, svnBinFolder, true);
+            Tfs2SvnConverter tfs2svnConverter = new Tfs2SvnConverter(tfsPath, tfsRepo, svnPath, overwrite, 1, workingCopyPath, svnBinFolder, true);
 
             AddUserMappings(tfs2svnConverter, fileContents);
 
             return tfs2svnConverter;
         }
-        private static string GetSvnPath(string fileContents)
-        {
+        private static string GetSvnPath(string fileContents) {
             Regex regex = new Regex(@"(?<svnpath>svnpath:\s+(?<path>[\w:\./\\]+))", RegexOptions.IgnoreCase);
             foreach (Match match in regex.Matches(fileContents))
                 return match.Groups["path"].Value;
 
             return "";
         }
-        private static string GetTfsRepo(string fileContents)
-        {
+        private static string GetTfsRepo(string fileContents) {
             Regex regex = new Regex(@"(?<tfsrepo>tfsrepo:\s+(?<path>[\w:\./\\]+))", RegexOptions.IgnoreCase);
 
             foreach (Match match in regex.Matches(fileContents))
@@ -102,8 +91,7 @@ namespace tfs2svn.Console
 
             return "";
         }
-        private static string GetTfsPath(string fileContents)
-        {
+        private static string GetTfsPath(string fileContents) {
             Regex regex = new Regex(@"(?<tfspath>tfspath:\s+(?<path>[\w:\./\\]+))", RegexOptions.IgnoreCase);
 
             foreach (Match match in regex.Matches(fileContents))
@@ -111,8 +99,7 @@ namespace tfs2svn.Console
 
             return "";
         }
-        private static bool GetOverwriteOption(string fileContents)
-        {
+        private static bool GetOverwriteOption(string fileContents) {
             Regex regex = new Regex(@"(?<overwrite>overwrite:\s+(?<value>(true|false|0|1)))", RegexOptions.IgnoreCase);
 
             foreach (Match match in regex.Matches(fileContents))
@@ -120,8 +107,7 @@ namespace tfs2svn.Console
 
             return true;
         }
-        private static void AddUserMappings(Tfs2SvnConverter tfs2svnConverter, string fileContents)
-        {
+        private static void AddUserMappings(Tfs2SvnConverter tfs2svnConverter, string fileContents) {
             Regex regex = new Regex(@"(?<usermapping>(usermapping:\s+(?<regex>\w+), (?<username>\w+), (?<password>\w+)))", RegexOptions.IgnoreCase);
 
             foreach (Match match in regex.Matches(fileContents))
@@ -132,12 +118,10 @@ namespace tfs2svn.Console
 
         #region Event Handlers
 
-        static void BeginChangeSet(int changeset, string committer, string comment, DateTime date)
-        {
+        static void BeginChangeSet(int changeset, string committer, string comment, DateTime date) {
             System.Console.WriteLine("Begin Changeset: " + changeset);
         }
-        static void EndChangeSet(int changeset, string committer, string comment, DateTime date)
-        {
+        static void EndChangeSet(int changeset, string committer, string comment, DateTime date) {
             System.Console.WriteLine("End Changeset: " + changeset);
         }
 
