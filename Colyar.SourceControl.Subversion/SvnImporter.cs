@@ -7,7 +7,7 @@ using log4net;
 using SharpSvn;
 
 namespace Colyar.SourceControl.Subversion {
-    public class SvnImporter {
+    public class SvnImporter : IDisposable {
         #region Private Variables
 
         private string _repositoryPath;
@@ -16,6 +16,8 @@ namespace Colyar.SourceControl.Subversion {
         private readonly string _svnPath;
         private readonly Dictionary<string, string> _usernameMap = new Dictionary<string, string>();
         private static readonly ILog log = LogManager.GetLogger(typeof(SvnImporter));
+        private readonly SvnClient _svnClient;
+        private readonly SvnRepositoryClient _svnRepoClient;
 
         #endregion
 
@@ -38,6 +40,8 @@ namespace Colyar.SourceControl.Subversion {
             this._workingCopyPath = workingCopyPath;
             this._svnPath = svnBinFolder;
             this._encoding = encoding;
+            this._svnClient = new SvnClient();
+            this._svnRepoClient = new SvnRepositoryClient();
         }
 
         #endregion
@@ -45,39 +49,28 @@ namespace Colyar.SourceControl.Subversion {
         #region Public Methods
 
         public void CreateRepository(string repositoryPath) {
-            using (SvnRepositoryClient client = new SvnRepositoryClient()) {
-                client.CreateRepository(repositoryPath);
-            }
-            //RunSvnAdminCommand(String.Format("create \"{0}\"", repositoryPath));
+            this._svnRepoClient.CreateRepository(repositoryPath);
         }
+
         public void CreateRepository() {
             CreateRepository(this._repositoryPath);
         }
+
         public void Checkout(string repositoryPath, string workingCopyPath) {
             this._repositoryPath = repositoryPath;
             this._workingCopyPath = workingCopyPath;
 
             Checkout();
         }
+
         public void Checkout() {
-            using (SvnClient client = new SvnClient()) {
-                client.CheckOut(new SvnUriTarget(this._repositoryPath), this._workingCopyPath);
-                //try
-                //{
-
-                //} catch (SvnException e)
-                //{
-
-                //}
-            }
-            //RunSvnCommand(String.Format("co \"{0}\" \"{1}\"", this._repositoryPath, this._workingCopyPath));
+            this._svnClient.CheckOut(new SvnUriTarget(this._repositoryPath), this._workingCopyPath);
         }
+
         public void Update() {
-            using (SvnClient client = new SvnClient()) {
-                client.Update(this._workingCopyPath);
-            }
-            //RunSvnCommand(String.Format("up \"{0}\"", this._workingCopyPath));
+            this._svnClient.Update(this._workingCopyPath);
         }
+
         public void Commit(string message, string committer, DateTime commitDate, int changeSet) {
             // clean-up message for svn and remove non-ASCII chars
             if (message != null) {
@@ -90,55 +83,36 @@ namespace Colyar.SourceControl.Subversion {
                 changeSet.ToString(CultureInfo.InvariantCulture),
                 message);
 
-            using (SvnClient client = new SvnClient()) {
-                SvnCommitArgs commitArg = new SvnCommitArgs();
-                commitArg.LogMessage = message;
-                client.Commit(this._workingCopyPath, commitArg);
-                //client.SetRevisionProperty(new Uri(this._repositoryPath), SvnRevision.Head, 'svn:date', )
-            }
-
-            //RunSvnCommand(String.Format("commit \"{0}\" -m \"{1}\"",
-            //this._workingCopyPath,
-            //message));
+            SvnCommitArgs commitArg = new SvnCommitArgs();
+            commitArg.LogMessage = message;
+            this._svnClient.Commit(this._workingCopyPath, commitArg);
 
             SetCommitAuthorAndDate(commitDate, committer);
         }
+
         public void Add(string path) {
             if (path != this._workingCopyPath) {
                 AddMissingDirectoryIfNeeded(path);
 
-                using (SvnClient client = new SvnClient()) {
-                    client.Add(path);
-                }
-                //RunSvnCommand(String.Format("add \"{0}\"", path));
+                this._svnClient.Add(Path.Combine(path));
             }
         }
         public void AddFolder(string path) {
             if (path != this._workingCopyPath) {
                 AddMissingDirectoryIfNeeded(path);
 
-                using (SvnClient client = new SvnClient()) {
-                    SvnAddArgs addArgs = new SvnAddArgs();
-                    addArgs.Depth = SvnDepth.Empty;
-                    addArgs.ThrowOnError = false;
-                    addArgs.ThrowOnWarning = false;
-                    client.Add(path, addArgs);
-                }
-
-                //RunSvnCommand(String.Format("add --depth=empty \"{0}\"", path));
+                SvnAddArgs addArgs = new SvnAddArgs();
+                addArgs.Depth = SvnDepth.Empty;
+                addArgs.ThrowOnError = false;
+                addArgs.ThrowOnWarning = false;
+                this._svnClient.Add(path, addArgs);
             }
         }
 
         public void Remove(string path, bool isFolder) {
-            using (SvnClient client = new SvnClient()) {
-                client.Delete(path);
-                if (isFolder) {
-                    client.Update(path);
-                }
-                //        RunSvnCommand(String.Format("rm \"{0}\"", path));
-
-                //if (isFolder)
-                //    RunSvnCommand(String.Format("up \"{0}\"", path));
+            this._svnClient.Delete(path);
+            if (isFolder) {
+                this._svnClient.Update(path);
             }
         }
 
@@ -148,10 +122,7 @@ namespace Colyar.SourceControl.Subversion {
         /// <param name="path"></param>
         /// <param name="isFolder"></param>
         public void CleanUp(string path) {
-            using (SvnClient client = new SvnClient()) {
-                client.CleanUp(path);
-            }
-            //RunSvnCommand(String.Format("cleanup \"{0}\"", path));
+            this._svnClient.CleanUp(path);
         }
 
         /// <summary>
@@ -161,40 +132,28 @@ namespace Colyar.SourceControl.Subversion {
         /// <param name="isFolder"></param>
         public void ForceRemove(string path, bool isFolder) {
 
-            using (SvnClient client = new SvnClient()) {
-                SvnDeleteArgs deleteArgs = new SvnDeleteArgs();
-                deleteArgs.Force = true;
-                client.Delete(path, deleteArgs);
-                if (isFolder) {
-                    client.Update(path);
-                }
+            SvnDeleteArgs deleteArgs = new SvnDeleteArgs();
+            deleteArgs.Force = true;
+            this._svnClient.Delete(path, deleteArgs);
+            if (isFolder) {
+                this._svnClient.Update(path);
             }
-            //RunSvnCommand(String.Format("rm --force \"{0}\"", path));
-
-            //if (isFolder) {
-            //    RunSvnCommand(String.Format("up \"{0}\"", path));
-            //}
         }
 
         public void MoveFile(string oldPath, string newPath, bool isFolder) {
             AddMissingDirectoryIfNeeded(newPath);
-            using (SvnClient client = new SvnClient()) {
-                client.Move(oldPath, newPath);
-            }
-            //RunSvnCommand(String.Format("mv \"{0}\" \"{1}\"", oldPath, newPath));
+            this._svnClient.Move(oldPath, newPath);
         }
         public void MoveServerSide(string oldPath, string newPath, int changeset, string committer, DateTime commitDate) {
             string oldUrl = _repositoryPath + ToUrlPath(oldPath.Remove(0, _workingCopyPath.Length));
             string newUrl = _repositoryPath + ToUrlPath(newPath.Remove(0, _workingCopyPath.Length));
 
             //when only casing is different, we need a server-side move/rename (because windows is case unsensitive!)
-            using (SvnClient client = new SvnClient()) {
-                SvnMoveArgs moveArgs = new SvnMoveArgs();
-                moveArgs.LogMessage = String.Format("[TFS Changeset #{0}]\ntfs2svn: server-side rename", changeset);
-                client.RemoteMove(new Uri(oldUrl), new Uri(newPath), moveArgs);
-            }
+            SvnMoveArgs moveArgs = new SvnMoveArgs();
+            moveArgs.LogMessage = String.Format("[TFS Changeset #{0}]\ntfs2svn: server-side rename", changeset);
+            this._svnClient.RemoteMove(new Uri(oldUrl), new Uri(newPath), moveArgs);
 
-            //RunSvnCommand(String.Format("mv \"{0}\" \"{1}\" --message \"[TFS Changeset #{2}]\ntfs2svn: server-side rename\"", oldUrl, newUrl, changeset));
+
             Update(); //todo: only update common rootpath of oldPath and newPath?
 
             SetCommitAuthorAndDate(commitDate, committer);
@@ -224,109 +183,40 @@ namespace Colyar.SourceControl.Subversion {
 
             string[] pathParts = directory.Substring(workingCopyDirectory.Length).Split('\\');
 
-            using (SvnClient client = new SvnClient()) {
-                foreach (string pathPart in pathParts) {
-                    workingCopyDirectory += '\\';
-                    workingCopyDirectory += pathPart;
+            foreach (string pathPart in pathParts) {
+                workingCopyDirectory += '\\';
+                workingCopyDirectory += pathPart;
 
-                    SvnAddArgs addArgs = new SvnAddArgs();
-                    addArgs.Depth = SvnDepth.Empty;
-                    addArgs.ThrowOnError = false;
-                    addArgs.ThrowOnWarning = false;
-                    client.Add(workingCopyDirectory, addArgs);
-                    //RunSvnCommand(String.Format("add --depth=empty {0}", workingCopyDirectory));
-                }
+                SvnAddArgs addArgs = new SvnAddArgs();
+                addArgs.Depth = SvnDepth.Empty;
+                addArgs.ThrowOnError = false;
+                addArgs.ThrowOnWarning = false;
+                this._svnClient.Add(workingCopyDirectory, addArgs);
             }
-            //RunSvnCommand("add --force \"" + directory + "\"");
-            // Commit("Adding missing directory", "tfs2svn", DateTime.Today, 0);
         }
         private void SetCommitAuthorAndDate(DateTime commitDate, string committer) {
             string username = GetMappedUsername(committer);
             string commitDateStr = commitDate.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffffffZ", CultureInfo.InvariantCulture);
-            using (SvnClient client = new SvnClient()) {
 
-                client.SetRevisionProperty(new Uri(this._repositoryPath),
+            this._svnClient.SetRevisionProperty(new Uri(this._repositoryPath),
                     SvnRevision.Head,
                     "svn:date",
                     commitDateStr
                     );
 
-                client.SetRevisionProperty(new Uri(this._repositoryPath),
+            this._svnClient.SetRevisionProperty(new Uri(this._repositoryPath),
                     SvnRevision.Head,
                     "svn:author",
                     username
                 );
-            }
 
-            //set time after commit
-            //RunSvnCommand(String.Format("propset svn:date --revprop -rHEAD {0} \"{1}\"",
-            //    commitDate.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffffffZ", CultureInfo.InvariantCulture),
-            //    this._workingCopyPath));
 
-            //RunSvnCommand(String.Format("propset svn:author --revprop -rHEAD \"{0}\" \"{1}\"",
-            //    username,
-            //    this._workingCopyPath));
+
         }
+
         private string ToUrlPath(string path) {
             return path.Replace("\\", "/");
         }
-        //private Tuple<string, string> RunCommand(string executablePath, string arguments) {
-        //    string standardOutput;
-        //    string errorOutput;
-        //    Process p = new Process();
-        //    p.StartInfo.FileName = executablePath;
-        //    p.StartInfo.Arguments = arguments;
-        //    // Redirect the output stream of the child process.
-        //    p.StartInfo.UseShellExecute = false;
-        //    p.StartInfo.CreateNoWindow = true;
-        //    p.StartInfo.RedirectStandardOutput = true;
-        //    p.StartInfo.RedirectStandardError = true;
-
-        //    p.Start();
-        //    /*if (!p.HasExited)
-        //    {
-        //        p.PriorityClass = ProcessPriorityClass.High;
-        //    }*/
-        //    standardOutput = p.StandardOutput.ReadToEnd();
-        //    errorOutput = p.StandardError.ReadToEnd();
-        //    if (!p.HasExited) {
-        //        p.WaitForExit();
-        //    }
-        //    p.Close();
-
-        //    return new Tuple<string, string>(standardOutput, errorOutput);
-        //}
-        //private void RunSvnCommand(string command) {
-        //    log.Info("svn " + command);
-
-        //    Tuple<string, string> outputs = RunCommand(this._svnPath + @"\svn.exe", command);
-
-        //    ParseSvnOuput(command, outputs.Item2);// item2 is error output
-        //}
-        //private void RunSvnAdminCommand(string command) {
-        //    log.Info("svnadmin " + command);
-
-        //    Tuple<string, string> outputs = RunCommand(this._svnPath + @"\svnadmin.exe", command);
-
-        //    ParseSvnOuput(command, outputs.Item2);// item2 is error output
-
-        //}
-
-        //private void ParseSvnOuput(string input, string output) {
-        //    if (Regex.Match(output, "^svn: warning").Success || Regex.Match(output, "^svn: avertissement").Success) {
-        //        log.Warn("Warning: " + output);
-        //        return;
-        //    }
-        //    if (output != "") {
-        //        throw new Exception(String.Format("svn error when executing 'svn {0}'. Exception: {1}.", input, output));
-        //    }
-        //}
-
-        //private void ParseSvnAdminOuput(string input, string output) {
-        //    if (output != "") {
-        //        throw new Exception(String.Format("svn error when executing 'svn {0}'. Exception: {1}.", input, output));
-        //    }
-        //}
 
         private string GetMappedUsername(string committer) {
             foreach (string tfsUsername in _usernameMap.Keys)
@@ -335,6 +225,27 @@ namespace Colyar.SourceControl.Subversion {
 
             return committer; //no mapping found, return committer's unmapped name
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing) {
+            if (!disposedValue) {
+                if (disposing) {
+                    this._svnClient.Dispose();
+                    this._svnRepoClient.Dispose();
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose() {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+        }
+        #endregion
 
         #endregion
     }

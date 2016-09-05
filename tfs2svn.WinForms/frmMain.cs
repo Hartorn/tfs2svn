@@ -33,15 +33,16 @@ namespace tfs2svn.Winforms {
             tbWorkingCopyFolder.Text = Settings.Default.WorkingCopyPath;
             cbDoInitialCheckout.Checked = Settings.Default.DoInitialCheckout;
 
-            encodingDropdown.Items.AddRange(ENCODINGS.Select(enc => DropdownElement.Of(enc, enc.EncodingName)).ToArray());
+            encodingDropdown.Items.AddRange(ENCODINGS.Select(enc => enc.EncodingName).ToArray());
             string encodingSelected = Settings.Default.Encoding ?? Encoding.ASCII.EncodingName;
             for (int i = 0; i < encodingDropdown.Items.Count; i++) {
-                if (((DropdownElement) encodingDropdown.Items[i]).Display == encodingSelected) {
+                if (((string) encodingDropdown.Items[i]) == encodingSelected) {
                     encodingDropdown.SelectedIndex = i;
                     break;
                 }
             }
 
+            encodingDropdown.SelectedIndexChanged += encodingDropdown_SelectedIndexChanged;
             //if (TfsClient.Providers != null)
             //{
             //    if (TfsClient.Providers[Settings.Default.TFSClientProvider] == null)
@@ -191,9 +192,9 @@ namespace tfs2svn.Winforms {
                 string tfsDomain = Settings.Default.TFSDomain = tbTFSDomain.Text;
                 string tfsPassword = tbTFSPassword.Text;
 
-                DropdownElement elt = (DropdownElement) encodingDropdown.SelectedItem;
-                Encoding encoding = (Encoding) elt.Element;
-                Settings.Default.Encoding = encoding.EncodingName;
+                Encoding encoding = ENCODINGS.Where(enc => enc.EncodingName == Settings.Default.Encoding).Single();
+
+                //Settings.Default.Encoding = encoding.EncodingName;
                 Settings.Default.Save(); //save settings
 
                 //starting converting
@@ -201,10 +202,11 @@ namespace tfs2svn.Winforms {
                 this.BeginInvoke(
                     new MethodInvoker(delegate () { AddListboxLine("Starting converting from TFS to SVN"); }));
 
-                Tfs2SvnConverter tfs2svnConverter = new Tfs2SvnConverter(tfsUrl, tfsRepo, svnUrl, cbCreateRepository.Enabled && cbCreateRepository.Checked, startChangeset, workingCopyFolder, Settings.Default.SvnBinFolder, doInitialCheckout, tfsUsername, tfsPassword, tfsDomain, encoding);
-                HookupEventHandlers(tfs2svnConverter);
-                AddUsernameMappings(tfs2svnConverter);
-                tfs2svnConverter.Convert();
+                using (Tfs2SvnConverter tfs2svnConverter = new Tfs2SvnConverter(tfsUrl, tfsRepo, svnUrl, cbCreateRepository.Enabled && cbCreateRepository.Checked, startChangeset, workingCopyFolder, Settings.Default.SvnBinFolder, doInitialCheckout, tfsUsername, tfsPassword, tfsDomain, encoding)) {
+                    HookupEventHandlers(tfs2svnConverter);
+                    AddUsernameMappings(tfs2svnConverter);
+                    tfs2svnConverter.Convert();
+                }
 
                 //done converting
                 log.Info("======== Finished tfs2svn converting");
@@ -246,6 +248,13 @@ namespace tfs2svn.Winforms {
             lstStatus.Items[lstStatus.Items.Count - 1] = lstStatus.Items[lstStatus.Items.Count - 1] + message;
         }
 
+        private void encodingDropdown_SelectedIndexChanged(object sender, EventArgs e) {
+            //set the choosen tfsclient provider
+            string encName = ((string) encodingDropdown.SelectedItem);
+            Settings.Default.Encoding = encName;
+            Settings.Default.Save();
+        }
+
         //private void comboTfsClientProvider_SelectedIndexChanged(object sender, EventArgs e)
         //{
         //    //set the choosen tfsclient provider
@@ -267,22 +276,22 @@ namespace tfs2svn.Winforms {
 
     }
 
-    public class DropdownElement {
-        public object Element { get; private set; }
-        public string Display { get; private set; }
+    //public class DropdownElement {
+    //    public object Element { get; private set; }
+    //    public string Display { get; private set; }
 
-        private DropdownElement(object element, string display) {
-            Element = element;
-            Display = display;
-        }
+    //    private DropdownElement(object element, string display) {
+    //        Element = element;
+    //        Display = display;
+    //    }
 
-        public override string ToString() {
-            return Display;
-        }
+    //    public override string ToString() {
+    //        return Display;
+    //    }
 
-        public static DropdownElement Of(object elt, string display) {
-            return new DropdownElement(elt, display);
-        }
-    }
+    //    public static DropdownElement Of(object elt, string display) {
+    //        return new DropdownElement(elt, display);
+    //    }
+    //}
 
 }

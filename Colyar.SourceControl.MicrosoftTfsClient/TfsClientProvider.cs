@@ -8,7 +8,7 @@ using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.VersionControl.Client;
 
 namespace Colyar.SourceControl.MicrosoftTfsClient {
-    public class TfsClientProvider {
+    public class TfsClientProvider : IDisposable {
         #region Public Events
 
         public event ChangesetHandler BeginChangeSet;
@@ -30,21 +30,21 @@ namespace Colyar.SourceControl.MicrosoftTfsClient {
 
         #region Private Variables
 
-        private Uri _serverUri;
-        private string _remotePath;
-        private string _localPath;
+        private readonly Uri _serverUri;
+        private readonly string _remotePath;
+        private readonly string _localPath;
         //private Microsoft.TeamFoundation.Client.TeamFoundationServer _teamFoundationServer;
-        private TfsTeamProjectCollection _tfsProjectCollection;
-        private VersionControlServer _versionControlServer;
-        private int _startingChangeset;
+        private readonly TfsTeamProjectCollection _tfsProjectCollection;
+        private readonly VersionControlServer _versionControlServer;
+        private readonly int _startingChangeset;
         private static readonly ILog log = LogManager.GetLogger(typeof(TfsClientProvider));
         private static readonly ChangeType changeMask = ChangeType.Add | ChangeType.Branch | ChangeType.Delete | ChangeType.Edit | ChangeType.Rename | ChangeType.Undelete;
         private static readonly ChangeType fullMask = changeMask | ChangeType.SourceRename;
         #endregion
 
-        #region Public Methods
+        #region Constructors 
 
-        public void Connect(string serverUri, string remotePath, string localPath, int fromChangeset, string tfsUsername, string tfsPassword, string tfsDomain) {
+        public TfsClientProvider(string serverUri, string remotePath, string localPath, int fromChangeset, string tfsUsername, string tfsPassword, string tfsDomain) {
             this._serverUri = new Uri(serverUri);
             this._remotePath = remotePath;
             this._localPath = localPath;
@@ -75,6 +75,9 @@ namespace Colyar.SourceControl.MicrosoftTfsClient {
             FolderRenamed = null;
             ChangeSetsFound = null;
         }
+        #endregion
+
+        #region Public Methods
 
         public void ProcessAllChangeSets() {
             Changeset changeset;
@@ -389,8 +392,7 @@ namespace Colyar.SourceControl.MicrosoftTfsClient {
         private string GetItemPath(Item item) {
             if (!item.ServerItem.StartsWith(this._remotePath, StringComparison.OrdinalIgnoreCase))
                 throw new Exception(item.ServerItem + " is not contained in " + this._remotePath);
-
-            var serverRelativePath = item.ServerItem.Remove(0, this._remotePath.Length).Replace("/", "\\");
+            string serverRelativePath = item.ServerItem == this._remotePath ? "" : item.ServerItem.Remove(0, this._remotePath.Length + 1).Replace("/", "\\");
             return Path.Combine(this._localPath, serverRelativePath);
         }
 
@@ -409,6 +411,28 @@ namespace Colyar.SourceControl.MicrosoftTfsClient {
                 throw new Exception("Error while executing GetPreviousItem", ex);
             }
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing) {
+            if (!disposedValue) {
+                if (disposing) {
+                    if (this._tfsProjectCollection != null) {
+                        this._tfsProjectCollection.Dispose();
+                    }
+                }
+                disposedValue = true;
+            }
+        }
+
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose() {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+        }
+        #endregion
 
         #endregion
     }

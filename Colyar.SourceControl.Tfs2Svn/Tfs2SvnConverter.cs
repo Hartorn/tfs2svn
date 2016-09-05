@@ -7,14 +7,14 @@ using Colyar.SourceControl.Subversion;
 using log4net;
 
 namespace Colyar.SourceControl.Tfs2Svn {
-    public class Tfs2SvnConverter {
+    public class Tfs2SvnConverter : IDisposable {
         #region Private Variables
 
         //private readonly TfsExporter _tfsExporter;
         private readonly SvnImporter _svnImporter;
         private static readonly ILog log = LogManager.GetLogger(typeof(Tfs2SvnConverter));
 
-        private TfsClientProvider _tfsClient;
+        private readonly TfsClientProvider _tfsClient;
         private string _tfsServer;
         private string _tfsRepository;
         private string _svnRepository;
@@ -37,9 +37,9 @@ namespace Colyar.SourceControl.Tfs2Svn {
 
         public Tfs2SvnConverter(string tfsPath, string tfsRepo, string svnPath, bool createSvnFileRepository, int fromChangeset, string workingCopyPath, string svnBinFolder, bool doInitialCheckout, string tfsUsername, string tfsPassword, string tfsDomain, Encoding encoding) {
             ParsePaths(tfsPath, tfsRepo, svnPath);
-            this._tfsClient = new TfsClientProvider();
+            //  this._tfsClient = new TfsClientProvider();
             //this._tfsExporter = new TfsExporter(this._tfsServer, this._tfsRepository, workingCopyPath, fromChangeset, tfsUsername, tfsPassword, tfsDomain);
-            this._tfsClient.Connect(this._tfsServer, this._tfsRepository, workingCopyPath, fromChangeset, tfsUsername, tfsPassword, tfsDomain);
+            this._tfsClient = new TfsClientProvider(this._tfsServer, this._tfsRepository, workingCopyPath, fromChangeset, tfsUsername, tfsPassword, tfsDomain);
 
             this._svnImporter = new SvnImporter(this._svnRepository, workingCopyPath, svnBinFolder, encoding);
             _createSvnFileRepository = createSvnFileRepository;
@@ -245,8 +245,9 @@ namespace Colyar.SourceControl.Tfs2Svn {
                 foreach (string destinationPath in fileSwapBackups.Keys) {
                     string sourcePath = fileSwapBackups[destinationPath];
 
-                    if (!fileSwapBackups.ContainsKey(sourcePath))
+                    if (!fileSwapBackups.ContainsKey(sourcePath)) {
                         throw new Exception(String.Format("Error in file-swapping; cannot continue. : File {0} not found in swap Backups., with new path {1}", sourcePath, destinationPath));
+                    }
 
                     string sourceSourcePath = GetBackupFilename(sourcePath);
                     File.Delete(sourceSourcePath);
@@ -259,8 +260,9 @@ namespace Colyar.SourceControl.Tfs2Svn {
         void tfsExporter_FileAdded(int changeset, string path, string committer, string comment, DateTime date) {
             log.Info("Adding file " + path);
 
-            if (!File.Exists(path))
+            if (!File.Exists(path)) {
                 throw new Exception("File not found in tfsExporter_FileAdded");
+            }
 
             this._svnImporter.Add(path);
         }
@@ -423,6 +425,27 @@ namespace Colyar.SourceControl.Tfs2Svn {
             this._svnImporter.MoveServerSide(oldPath, newPath, changeset, committer, date);
             renamedFolders.Add(oldPath, newPath);
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing) {
+            if (!disposedValue) {
+                if (disposing) {
+                    this._tfsClient.Dispose();
+                    this._svnImporter.Dispose();
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose() {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+        }
+        #endregion
 
         #endregion
     }
