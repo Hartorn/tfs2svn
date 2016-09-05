@@ -14,7 +14,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Colyar.Utils", "Colyar.Util
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Colyar.SourceControl.MicrosoftTfsClient", "Colyar.SourceControl.MicrosoftTfsClient\Colyar.SourceControl.MicrosoftTfsClient.csproj", "{6A457FA8-2A9F-41C4-B45C-D98DAE10BDA6}"
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "tfs2svn.Setup", "tfs2svn.Setup\tfs2svn.Setup.vdproj", "{7A3B2809-11FE-40DB-B5A9-03DAECB84D4A}"
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "tfs2svn.Setup", "tfs2svn.NewSetup\tfs2svn.NewSetup.vdproj", "{1B3B938E-B2F7-459A-80AE-EF88C2CC5A88}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -98,16 +98,12 @@ Global
 		{6A457FA8-2A9F-41C4-B45C-D98DAE10BDA6}.Release|x64.Build.0 = Release|x64
 		{6A457FA8-2A9F-41C4-B45C-D98DAE10BDA6}.Release|x86.ActiveCfg = Release|x86
 		{6A457FA8-2A9F-41C4-B45C-D98DAE10BDA6}.Release|x86.Build.0 = Release|x86
-		{7A3B2809-11FE-40DB-B5A9-03DAECB84D4A}.Debug|Any CPU.ActiveCfg = Debug
-		{7A3B2809-11FE-40DB-B5A9-03DAECB84D4A}.Debug|x64.ActiveCfg = Debug
-		{7A3B2809-11FE-40DB-B5A9-03DAECB84D4A}.Debug|x64.Build.0 = Debug
-		{7A3B2809-11FE-40DB-B5A9-03DAECB84D4A}.Debug|x86.ActiveCfg = Debug
-		{7A3B2809-11FE-40DB-B5A9-03DAECB84D4A}.Debug|x86.Build.0 = Debug
-		{7A3B2809-11FE-40DB-B5A9-03DAECB84D4A}.Release|Any CPU.ActiveCfg = Release
-		{7A3B2809-11FE-40DB-B5A9-03DAECB84D4A}.Release|x64.ActiveCfg = Release
-		{7A3B2809-11FE-40DB-B5A9-03DAECB84D4A}.Release|x64.Build.0 = Release
-		{7A3B2809-11FE-40DB-B5A9-03DAECB84D4A}.Release|x86.ActiveCfg = Release
-		{7A3B2809-11FE-40DB-B5A9-03DAECB84D4A}.Release|x86.Build.0 = Release
+		{1B3B938E-B2F7-459A-80AE-EF88C2CC5A88}.Debug|Any CPU.ActiveCfg = Debug
+		{1B3B938E-B2F7-459A-80AE-EF88C2CC5A88}.Debug|x64.ActiveCfg = Debug
+		{1B3B938E-B2F7-459A-80AE-EF88C2CC5A88}.Debug|x86.ActiveCfg = Debug
+		{1B3B938E-B2F7-459A-80AE-EF88C2CC5A88}.Release|Any CPU.ActiveCfg = Release
+		{1B3B938E-B2F7-459A-80AE-EF88C2CC5A88}.Release|x64.ActiveCfg = Release
+		{1B3B938E-B2F7-459A-80AE-EF88C2CC5A88}.Release|x86.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
