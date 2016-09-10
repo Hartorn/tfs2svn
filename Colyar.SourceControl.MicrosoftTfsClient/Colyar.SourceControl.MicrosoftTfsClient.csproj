@@ -340,6 +340,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AbstractChangeHandler.cs" />
+    <Compile Include="FolderChangeHandler.cs" />
+    <Compile Include="FileChangeHandler.cs" />
     <Compile Include="TfsClientProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

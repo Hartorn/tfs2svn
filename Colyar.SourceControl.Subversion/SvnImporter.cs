@@ -209,9 +209,6 @@ namespace Colyar.SourceControl.Subversion {
                     "svn:author",
                     username
                 );
-
-
-
         }
 
         private string ToUrlPath(string path) {
@@ -225,6 +222,9 @@ namespace Colyar.SourceControl.Subversion {
 
             return committer; //no mapping found, return committer's unmapped name
         }
+
+
+        #endregion
 
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
@@ -247,6 +247,5 @@ namespace Colyar.SourceControl.Subversion {
         }
         #endregion
 
-        #endregion
     }
 }

@@ -43,18 +43,6 @@ namespace tfs2svn.Winforms {
             }
 
             encodingDropdown.SelectedIndexChanged += encodingDropdown_SelectedIndexChanged;
-            //if (TfsClient.Providers != null)
-            //{
-            //    if (TfsClient.Providers[Settings.Default.TFSClientProvider] == null)
-            //        Settings.Default.TFSClientProvider = "";
-
-            //    //foreach (TfsClientProviderBase tfsProvider in TfsClient.Providers)
-            //    //    comboTfsClientProvider.Items.Add(new NameDescriptionPair(tfsProvider.Name, tfsProvider.Description));
-
-            //    //for (int i = 0; i < comboTfsClientProvider.Items.Count; i++)
-            //    //    if (((NameDescriptionPair)comboTfsClientProvider.Items[i]).Name == (Settings.Default.TFSClientProvider == "" ? TfsClient.Provider.Name : Settings.Default.TFSClientProvider))
-            //    //        comboTfsClientProvider.SelectedIndex = i;
-            //}
 
             //init log4net
             XmlConfigurator.Configure();
@@ -255,15 +243,6 @@ namespace tfs2svn.Winforms {
             Settings.Default.Save();
         }
 
-        //private void comboTfsClientProvider_SelectedIndexChanged(object sender, EventArgs e)
-        //{
-        //    //set the choosen tfsclient provider
-        //    string selectedProvideName = ((NameDescriptionPair)comboTfsClientProvider.SelectedItem).Name;
-        //    TfsClient.SetProvider(selectedProvideName);
-
-        //    Settings.Default.TFSClientProvider = selectedProvideName;
-        //    Settings.Default.Save();
-        //}
         #endregion
 
         private void quitToolStripMenuItem_Click(object sender, EventArgs e) {
@@ -276,22 +255,5 @@ namespace tfs2svn.Winforms {
 
     }
 
-    //public class DropdownElement {
-    //    public object Element { get; private set; }
-    //    public string Display { get; private set; }
-
-    //    private DropdownElement(object element, string display) {
-    //        Element = element;
-    //        Display = display;
-    //    }
-
-    //    public override string ToString() {
-    //        return Display;
-    //    }
-
-    //    public static DropdownElement Of(object elt, string display) {
-    //        return new DropdownElement(elt, display);
-    //    }
-    //}
 
 }

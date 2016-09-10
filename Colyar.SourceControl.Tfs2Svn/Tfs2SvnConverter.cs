@@ -32,13 +32,16 @@ namespace Colyar.SourceControl.Tfs2Svn {
 
         #region Public Constructor
 
-        public Tfs2SvnConverter(string tfsPath, string tfsRepo, string svnPath, bool createSvnFileRepository, int fromChangeset, string workingCopyPath, string svnBinFolder, bool doInitialCheckout)
-            : this(tfsPath, svnPath, tfsRepo, createSvnFileRepository, fromChangeset, workingCopyPath, svnBinFolder, doInitialCheckout, null, null, null, Encoding.ASCII) { }
-
         public Tfs2SvnConverter(string tfsPath, string tfsRepo, string svnPath, bool createSvnFileRepository, int fromChangeset, string workingCopyPath, string svnBinFolder, bool doInitialCheckout, string tfsUsername, string tfsPassword, string tfsDomain, Encoding encoding) {
-            ParsePaths(tfsPath, tfsRepo, svnPath);
-            //  this._tfsClient = new TfsClientProvider();
-            //this._tfsExporter = new TfsExporter(this._tfsServer, this._tfsRepository, workingCopyPath, fromChangeset, tfsUsername, tfsPassword, tfsDomain);
+
+            this._tfsServer = tfsPath;
+            this._tfsRepository = tfsRepo;
+            this._svnRepository = svnPath;
+
+            log.Info("TFS SERVER: " + this._tfsServer);
+            log.Info("TFS REPO: " + this._tfsRepository);
+            log.Info("SVN REPO: " + this._svnRepository);
+
             this._tfsClient = new TfsClientProvider(this._tfsServer, this._tfsRepository, workingCopyPath, fromChangeset, tfsUsername, tfsPassword, tfsDomain);
 
             this._svnImporter = new SvnImporter(this._svnRepository, workingCopyPath, svnBinFolder, encoding);
@@ -120,12 +123,12 @@ namespace Colyar.SourceControl.Tfs2Svn {
             if (_createSvnFileRepository && this._svnRepository.StartsWith("file:///")) {
                 string localSvnPath = this._svnRepository.Replace("file:///", String.Empty).Replace("/", "\\");
 
-                if (!String.IsNullOrEmpty(localSvnPath))
+                if (!String.IsNullOrEmpty(localSvnPath)) {
                     DeletePath(localSvnPath);
+                }
 
                 log.Info("Start creating file repository " + localSvnPath);
-                if (SvnAdminEvent != null)
-                    SvnAdminEvent("Start creating file repository " + localSvnPath);
+                SvnAdminEvent?.Invoke("Start creating file repository " + localSvnPath);
 
                 this._svnImporter.CreateRepository(localSvnPath);
 
@@ -137,8 +140,7 @@ namespace Colyar.SourceControl.Tfs2Svn {
                 }
 
                 log.Info("Finished creating file repository " + localSvnPath);
-                if (SvnAdminEvent != null)
-                    SvnAdminEvent("Finished creating file repository " + localSvnPath);
+                SvnAdminEvent?.Invoke("Finished creating file repository " + localSvnPath);
             }
 
             //initial checkout?
@@ -174,28 +176,6 @@ namespace Colyar.SourceControl.Tfs2Svn {
             this._tfsClient.FolderUndeleted += tfsExporter_FolderUndeleted;
         }
 
-        private void ParsePaths(string tfsPath, string tfsRepo, string svnPath) {
-            this._tfsServer = ParseTfsServer(tfsPath);
-            log.Info("TFS SERVER: " + this._tfsServer);
-
-            this._tfsRepository = ParseTfsRepository(tfsRepo);
-            log.Info("TFS REPO: " + this._tfsRepository);
-
-            this._svnRepository = ParseSvnRepository(svnPath);
-            log.Info("SVN REPO: " + this._svnRepository);
-        }
-
-        private string ParseTfsServer(string tfsPath) {
-            return tfsPath;
-        }
-        private string ParseTfsRepository(string tfsPath) {
-            return tfsPath;
-        }
-        private string ParseSvnRepository(string svnPath) {
-            return svnPath;
-        }
-
-
         private void DeletePath(string path) {
             if (!Directory.Exists(path))
                 return;
@@ -203,12 +183,14 @@ namespace Colyar.SourceControl.Tfs2Svn {
             DirectoryInfo directoryInfo = new DirectoryInfo(path);
 
             //unhide .svn folders 
-            foreach (FileInfo fileInfo in directoryInfo.GetFiles())
+            foreach (FileInfo fileInfo in directoryInfo.GetFiles()) {
                 File.SetAttributes(fileInfo.FullName, FileAttributes.Normal);
+            }
 
             //delete recursively
-            foreach (DirectoryInfo subDirectoryInfo in directoryInfo.GetDirectories())
+            foreach (DirectoryInfo subDirectoryInfo in directoryInfo.GetDirectories()) {
                 DeletePath(subDirectoryInfo.FullName);
+            }
 
             Directory.Delete(path, true);
         }
