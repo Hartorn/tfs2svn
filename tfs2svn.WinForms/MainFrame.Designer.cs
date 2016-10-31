@@ -1,4 +1,4 @@
-namespace tfs2svn.Winforms
+namespace Tfs2Svn.Winforms
 {
     partial class MainForm
     {

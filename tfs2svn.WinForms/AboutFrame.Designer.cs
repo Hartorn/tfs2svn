@@ -1,6 +1,6 @@
-namespace tfs2svn.Winforms
+namespace Tfs2Svn.Winforms
 {
-    partial class frmAbout
+    partial class AboutFrame
     {
         /// <summary>
         /// Required designer variable.
@@ -28,7 +28,7 @@ namespace tfs2svn.Winforms
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmAbout));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AboutFrame));
             this.label1 = new System.Windows.Forms.Label();
             this.linkLabel1 = new System.Windows.Forms.LinkLabel();
             this.lblVersion = new System.Windows.Forms.Label();
@@ -75,7 +75,7 @@ namespace tfs2svn.Winforms
             this.Name = "frmAbout";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "About tfs2svn";
-            this.Load += new System.EventHandler(this.frmAbout_Load);
+            this.Load += new System.EventHandler(this.AboutFrame_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

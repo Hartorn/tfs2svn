@@ -1,210 +1,238 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using Colyar.SourceControl.MicrosoftTfsClient;
-using Colyar.SourceControl.Subversion;
-using log4net;
+namespace Tfs2Svn.Converter
+{
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Text;
+    using Common;
+    using log4net;
+    using Subversion;
+    using TfsClient;
 
-namespace Colyar.SourceControl.Tfs2Svn {
-    public class Tfs2SvnConverter : IDisposable {
-        #region Private Variables
+    public class Tfs2SvnConverter : IDisposable
+    {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(Tfs2SvnConverter));
 
-        //private readonly TfsExporter _tfsExporter;
-        private readonly SvnImporter _svnImporter;
-        private static readonly ILog log = LogManager.GetLogger(typeof(Tfs2SvnConverter));
+        private readonly SvnImporter svnImporter;
 
-        private readonly TfsClientProvider _tfsClient;
-        private string _tfsServer;
-        private string _tfsRepository;
-        private string _svnRepository;
-        private string _workingCopyPath;
-
-        private bool _createSvnFileRepository;
-        private bool _doInitialCheckout;
-
-        //private readonly string _tfsUrlRegex = @"(?<server>https?://([\w+-]\.?)+(:\d+)?)(?<repo>(/[\w-. ]+)+)?";
-        //private readonly string _svnUrlRegex = @"(?<server>(https?|file|svn|svn\+ssh):///?([\w-]+\.?)+)(?<repo>(/[\w-]+)+)?";
-
+        private readonly TfsClientProvider tfsClient;
+        private bool createSvnFileRepository;
+        private bool disposedValue = false;
+        private bool doInitialCheckout;
         private Dictionary<string, string> fileSwapBackups = new Dictionary<string, string>();
         private Dictionary<string, string> renamedFolders = new Dictionary<string, string>();
-        #endregion
+        private string svnRepository;
+        private string tfsRepository;
+        private string tfsServer;
+        private string workingCopyPath;
 
-        #region Public Constructor
+        public Tfs2SvnConverter(string tfsPath, string tfsRepo, string svnPath, bool createSvnFileRepository, int fromChangeset, string workingCopyPath, string svnBinFolder, bool doInitialCheckout, string tfsUsername, string tfsPassword, string tfsDomain, Encoding encoding)
+        {
+            this.tfsServer = tfsPath;
+            this.tfsRepository = tfsRepo;
+            this.svnRepository = svnPath;
 
-        public Tfs2SvnConverter(string tfsPath, string tfsRepo, string svnPath, bool createSvnFileRepository, int fromChangeset, string workingCopyPath, string svnBinFolder, bool doInitialCheckout, string tfsUsername, string tfsPassword, string tfsDomain, Encoding encoding) {
+            Log.Info("TFS SERVER: " + this.tfsServer);
+            Log.Info("TFS REPO: " + this.tfsRepository);
+            Log.Info("SVN REPO: " + this.svnRepository);
 
-            this._tfsServer = tfsPath;
-            this._tfsRepository = tfsRepo;
-            this._svnRepository = svnPath;
+            this.tfsClient = new TfsClientProvider(this.tfsServer, this.tfsRepository, workingCopyPath, fromChangeset, tfsUsername, tfsPassword, tfsDomain);
 
-            log.Info("TFS SERVER: " + this._tfsServer);
-            log.Info("TFS REPO: " + this._tfsRepository);
-            log.Info("SVN REPO: " + this._svnRepository);
+            this.svnImporter = new SvnImporter(this.svnRepository, workingCopyPath, svnBinFolder, encoding);
+            this.createSvnFileRepository = createSvnFileRepository;
+            this.doInitialCheckout = doInitialCheckout;
+            this.workingCopyPath = workingCopyPath;
 
-            this._tfsClient = new TfsClientProvider(this._tfsServer, this._tfsRepository, workingCopyPath, fromChangeset, tfsUsername, tfsPassword, tfsDomain);
-
-            this._svnImporter = new SvnImporter(this._svnRepository, workingCopyPath, svnBinFolder, encoding);
-            _createSvnFileRepository = createSvnFileRepository;
-            _doInitialCheckout = doInitialCheckout;
-            _workingCopyPath = workingCopyPath;
-
-            HookupTfsExporterEventHandlers();
+            this.HookupTfsExporterEventHandlers();
         }
 
-        #endregion
+        public event ChangesetHandler BeginChangeSet
+        {
+            add { this.tfsClient.BeginChangeSet += value; }
+            remove { this.tfsClient.BeginChangeSet -= value; }
+        }
 
-        #region Public Property Events
+        public event ChangesetsFoundHandler ChangeSetsFound
+        {
+            add { this.tfsClient.ChangeSetsFound += value; }
+            remove { this.tfsClient.ChangeSetsFound -= value; }
+        }
 
-        public event ChangesetHandler BeginChangeSet {
-            add { this._tfsClient.BeginChangeSet += value; }
-            remove { this._tfsClient.BeginChangeSet -= value; }
+        public event ChangesetHandler EndChangeSet
+        {
+            add { this.tfsClient.EndChangeSet += value; }
+            remove { this.tfsClient.EndChangeSet -= value; }
         }
-        public event ChangesetsFoundHandler ChangeSetsFound {
-            add { this._tfsClient.ChangeSetsFound += value; }
-            remove { this._tfsClient.ChangeSetsFound -= value; }
+
+        public event SinglePathHandler FileAdded
+        {
+            add { this.tfsClient.FileAdded += value; }
+            remove { this.tfsClient.FileAdded -= value; }
         }
-        public event ChangesetHandler EndChangeSet {
-            add { this._tfsClient.EndChangeSet += value; }
-            remove { this._tfsClient.EndChangeSet -= value; }
+
+        public event SinglePathHandler FileBranched
+        {
+            add { this.tfsClient.FileBranched += value; }
+            remove { this.tfsClient.FileBranched -= value; }
         }
+
+        public event SinglePathHandler FileDeleted
+        {
+            add { this.tfsClient.FileDeleted += value; }
+            remove { this.tfsClient.FileDeleted -= value; }
+        }
+
+        public event SinglePathHandler FileEdited
+        {
+            add { this.tfsClient.FileEdited += value; }
+            remove { this.tfsClient.FileEdited -= value; }
+        }
+
+        public event DualPathHandler FileRenamed
+        {
+            add { this.tfsClient.FileRenamed += value; }
+            remove { this.tfsClient.FileRenamed -= value; }
+        }
+
+        public event SinglePathHandler FileUndeleted
+        {
+            add { this.tfsClient.FileUndeleted += value; }
+            remove { this.tfsClient.FileUndeleted -= value; }
+        }
+
+        public event SinglePathHandler FolderAdded
+        {
+            add { this.tfsClient.FolderAdded += value; }
+            remove { this.tfsClient.FolderAdded -= value; }
+        }
+
+        public event SinglePathHandler FolderBranched
+        {
+            add { this.tfsClient.FolderBranched += value; }
+            remove { this.tfsClient.FolderBranched -= value; }
+        }
+
+        public event SinglePathHandler FolderDeleted
+        {
+            add { this.tfsClient.FolderDeleted += value; }
+            remove { this.tfsClient.FolderDeleted -= value; }
+        }
+
+        public event DualPathHandler FolderRenamed
+        {
+            add { this.tfsClient.FolderRenamed += value; }
+            remove { this.tfsClient.FolderRenamed -= value; }
+        }
+
+        public event SinglePathHandler FolderUndeleted
+        {
+            add { this.tfsClient.FolderUndeleted += value; }
+            remove { this.tfsClient.FolderUndeleted -= value; }
+        }
+
         public event SvnAdminEventHandler SvnAdminEvent;
-        public event SinglePathHandler FileAdded {
-            add { this._tfsClient.FileAdded += value; }
-            remove { this._tfsClient.FileAdded -= value; }
-        }
-        public event SinglePathHandler FileBranched {
-            add { this._tfsClient.FileBranched += value; }
-            remove { this._tfsClient.FileBranched -= value; }
-        }
-        public event SinglePathHandler FileDeleted {
-            add { this._tfsClient.FileDeleted += value; }
-            remove { this._tfsClient.FileDeleted -= value; }
-        }
-        public event SinglePathHandler FileEdited {
-            add { this._tfsClient.FileEdited += value; }
-            remove { this._tfsClient.FileEdited -= value; }
-        }
-        public event DualPathHandler FileRenamed {
-            add { this._tfsClient.FileRenamed += value; }
-            remove { this._tfsClient.FileRenamed -= value; }
-        }
-        public event SinglePathHandler FileUndeleted {
-            add { this._tfsClient.FileUndeleted += value; }
-            remove { this._tfsClient.FileUndeleted -= value; }
-        }
-        public event SinglePathHandler FolderAdded {
-            add { this._tfsClient.FolderAdded += value; }
-            remove { this._tfsClient.FolderAdded -= value; }
-        }
-        public event SinglePathHandler FolderBranched {
-            add { this._tfsClient.FolderBranched += value; }
-            remove { this._tfsClient.FolderBranched -= value; }
-        }
-        public event SinglePathHandler FolderDeleted {
-            add { this._tfsClient.FolderDeleted += value; }
-            remove { this._tfsClient.FolderDeleted -= value; }
-        }
-        public event DualPathHandler FolderRenamed {
-            add { this._tfsClient.FolderRenamed += value; }
-            remove { this._tfsClient.FolderRenamed -= value; }
-        }
-        public event SinglePathHandler FolderUndeleted {
-            add { this._tfsClient.FolderUndeleted += value; }
-            remove { this._tfsClient.FolderUndeleted -= value; }
+
+        public void AddUsernameMapping(string tfsUsername, string svnUsername)
+        {
+            this.svnImporter.AddUsernameMapping(tfsUsername, svnUsername);
         }
 
-        #endregion
+        public void Convert()
+        {
+            // See if repository should be created (e.g. file:///c:\myrepository)
+            if (this.createSvnFileRepository && this.svnRepository.StartsWith("file:///"))
+            {
+                string localSvnPath = this.svnRepository.Replace("file:///", string.Empty).Replace("/", "\\");
 
-        #region Public Methods
-
-        public void Convert() {
-            //see if repository should be created (e.g. file:///c:\myrepository)
-            if (_createSvnFileRepository && this._svnRepository.StartsWith("file:///")) {
-                string localSvnPath = this._svnRepository.Replace("file:///", String.Empty).Replace("/", "\\");
-
-                if (!String.IsNullOrEmpty(localSvnPath)) {
-                    DeletePath(localSvnPath);
+                if (!string.IsNullOrEmpty(localSvnPath))
+                {
+                    this.DeletePath(localSvnPath);
                 }
 
-                log.Info("Start creating file repository " + localSvnPath);
-                SvnAdminEvent?.Invoke("Start creating file repository " + localSvnPath);
+                Log.Info("Start creating file repository " + localSvnPath);
+                this.SvnAdminEvent?.Invoke("Start creating file repository " + localSvnPath);
 
-                this._svnImporter.CreateRepository(localSvnPath);
+                this.svnImporter.CreateRepository(localSvnPath);
 
-                //add empty Pre-RevisionPropertyChange hookfile (to make it possible to use propset)
+                // Add empty Pre-RevisionPropertyChange hookfile (to make it possible to use propset)
                 string hookPath = localSvnPath + "/hooks/pre-revprop-change.cmd";
-                if (!File.Exists(hookPath)) {
+                if (!File.Exists(hookPath))
+                {
                     FileStream fs = File.Create(hookPath);
                     fs.Close();
                 }
 
-                log.Info("Finished creating file repository " + localSvnPath);
-                SvnAdminEvent?.Invoke("Finished creating file repository " + localSvnPath);
+                Log.Info("Finished creating file repository " + localSvnPath);
+                this.SvnAdminEvent?.Invoke("Finished creating file repository " + localSvnPath);
             }
 
-            //initial checkout?
-            if (_doInitialCheckout) {
-                DeletePath(_workingCopyPath);
-                this._svnImporter.Checkout();
+            // Initial checkout?
+            if (this.doInitialCheckout)
+            {
+                this.DeletePath(this.workingCopyPath);
+                this.svnImporter.Checkout();
             }
 
-            //now read and process all TFS changesets
-            this._tfsClient.ProcessAllChangeSets();
-        }
-        public void AddUsernameMapping(string tfsUsername, string svnUsername) {
-            this._svnImporter.AddUsernameMapping(tfsUsername, svnUsername);
+            // Now read and process all TFS changesets
+            this.tfsClient.ProcessAllChangeSets();
         }
 
-        #endregion
-
-        #region Private Methods
-
-        private void HookupTfsExporterEventHandlers() {
-            this._tfsClient.BeginChangeSet += tfsExporter_BeginChangeSet;
-            this._tfsClient.EndChangeSet += tfsExporter_EndChangeSet;
-            this._tfsClient.FileAdded += tfsExporter_FileAdded;
-            this._tfsClient.FileDeleted += tfsExporter_FileDeleted;
-            this._tfsClient.FileEdited += tfsExporter_FileEdited;
-            this._tfsClient.FileRenamed += tfsExporter_FileRenamed;
-            this._tfsClient.FileBranched += tfsExporter_FileBranched;
-            this._tfsClient.FileUndeleted += tfsExporter_FileUndeleted;
-            this._tfsClient.FolderAdded += tfsExporter_FolderAdded;
-            this._tfsClient.FolderDeleted += tfsExporter_FolderDeleted;
-            this._tfsClient.FolderRenamed += tfsExporter_FolderRenamed;
-            this._tfsClient.FolderBranched += tfsExporter_FolderBranched;
-            this._tfsClient.FolderUndeleted += tfsExporter_FolderUndeleted;
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            this.Dispose(true);
         }
 
-        private void DeletePath(string path) {
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!this.disposedValue)
+            {
+                if (disposing)
+                {
+                    this.tfsClient.Dispose();
+                    this.svnImporter.Dispose();
+                }
+
+                this.disposedValue = true;
+            }
+        }
+
+        private void DeletePath(string path)
+        {
             if (!Directory.Exists(path))
+            {
                 return;
+            }
 
             DirectoryInfo directoryInfo = new DirectoryInfo(path);
 
-            //unhide .svn folders 
-            foreach (FileInfo fileInfo in directoryInfo.GetFiles()) {
+            // unhide .svn folders
+            foreach (FileInfo fileInfo in directoryInfo.GetFiles())
+            {
                 File.SetAttributes(fileInfo.FullName, FileAttributes.Normal);
             }
 
-            //delete recursively
-            foreach (DirectoryInfo subDirectoryInfo in directoryInfo.GetDirectories()) {
-                DeletePath(subDirectoryInfo.FullName);
+            // Delete recursively
+            foreach (DirectoryInfo subDirectoryInfo in directoryInfo.GetDirectories())
+            {
+                this.DeletePath(subDirectoryInfo.FullName);
             }
 
             Directory.Delete(path, true);
         }
 
-        private string GetBackupFilename(string path) {
-            return path.Insert(path.LastIndexOf(@"\") + 1, "___temp");
-        }
+        private string FixPreviouslyRenamedFolder(string path)
+        {
+            if (path != null)
+            {
+                foreach (string preRenameFolder in this.renamedFolders.Keys)
+                {
+                    if (path.ToLowerInvariant().StartsWith(preRenameFolder.ToLowerInvariant()))
+                    {
+                        path = path.Remove(0, preRenameFolder.Length).Insert(0, this.renamedFolders[preRenameFolder]);
 
-        private string FixPreviouslyRenamedFolder(string path) {
-            if (path != null) {
-                foreach (string preRenameFolder in renamedFolders.Keys) {
-                    if (path.ToLowerInvariant().StartsWith(preRenameFolder.ToLowerInvariant())) {
-                        path = path.Remove(0, preRenameFolder.Length).Insert(0, renamedFolders[preRenameFolder]);
-                        //note: do not break now: each next preRenameFolder must also be checked
+                        // note: do not break now: each next preRenameFolder must also be checked
                     }
                 }
             }
@@ -212,184 +240,242 @@ namespace Colyar.SourceControl.Tfs2Svn {
             return path;
         }
 
-        #endregion
-
-        #region Event Handlers
-
-        void tfsExporter_BeginChangeSet(int changeset, string committer, string comment, DateTime date) {
-            renamedFolders.Clear();
-            fileSwapBackups.Clear();
+        private string GetBackupFilename(string path)
+        {
+            return path.Insert(path.LastIndexOf(@"\") + 1, "___temp");
         }
 
-        void tfsExporter_EndChangeSet(int changeset, string committer, string comment, DateTime date) {
-            //check if cyclic swapped files were all handled
-            if (fileSwapBackups.Count > 0) {
-                foreach (string destinationPath in fileSwapBackups.Keys) {
-                    string sourcePath = fileSwapBackups[destinationPath];
+        private void HookupTfsExporterEventHandlers()
+        {
+            this.tfsClient.BeginChangeSet += this.Tfs2SvnConverter_BeginChangeSet;
+            this.tfsClient.EndChangeSet += this.Tfs2SvnConverter_EndChangeSet;
+            this.tfsClient.FileAdded += this.Tfs2SvnConverter_FileAdded;
+            this.tfsClient.FileDeleted += this.Tfs2SvnConverter_FileDeleted;
+            this.tfsClient.FileEdited += this.Tfs2SvnConverter_FileEdited;
+            this.tfsClient.FileRenamed += this.Tfs2SvnConverter_FileRenamed;
+            this.tfsClient.FileBranched += this.Tfs2SvnConverter_FileBranched;
+            this.tfsClient.FileUndeleted += this.Tfs2SvnConverter_FileUndeleted;
+            this.tfsClient.FolderAdded += this.Tfs2SvnConverter_FolderAdded;
+            this.tfsClient.FolderDeleted += this.Tfs2SvnConverter_FolderDeleted;
+            this.tfsClient.FolderRenamed += this.Tfs2SvnConverter_FolderRenamed;
+            this.tfsClient.FolderBranched += this.Tfs2SvnConverter_FolderBranched;
+            this.tfsClient.FolderUndeleted += this.Tfs2SvnConverter_FolderUndeleted;
+        }
 
-                    if (!fileSwapBackups.ContainsKey(sourcePath)) {
-                        throw new Exception(String.Format("Error in file-swapping; cannot continue. : File {0} not found in swap Backups., with new path {1}", sourcePath, destinationPath));
+        private void Tfs2SvnConverter_BeginChangeSet(int changeset, string committer, string comment, DateTime date)
+        {
+            this.renamedFolders.Clear();
+            this.fileSwapBackups.Clear();
+        }
+
+        private void Tfs2SvnConverter_EndChangeSet(int changeset, string committer, string comment, DateTime date)
+        {
+            // Check if cyclic swapped files were all handled
+            if (this.fileSwapBackups.Count > 0)
+            {
+                foreach (string destinationPath in this.fileSwapBackups.Keys)
+                {
+                    string sourcePath = this.fileSwapBackups[destinationPath];
+
+                    if (!this.fileSwapBackups.ContainsKey(sourcePath))
+                    {
+                        throw new Exception(string.Format("Error in file-swapping; cannot continue. : File {0} not found in swap Backups., with new path {1}", sourcePath, destinationPath));
                     }
 
-                    string sourceSourcePath = GetBackupFilename(sourcePath);
+                    string sourceSourcePath = this.GetBackupFilename(sourcePath);
                     File.Delete(sourceSourcePath);
                 }
             }
 
-            this._svnImporter.Commit(comment, committer, date, changeset);
+            this.svnImporter.Commit(comment, committer, date, changeset);
         }
 
-        void tfsExporter_FileAdded(int changeset, string path, string committer, string comment, DateTime date) {
-            log.Info("Adding file " + path);
+        private void Tfs2SvnConverter_FileAdded(int changeset, string path, string committer, string comment, DateTime date)
+        {
+            Log.Info("Adding file " + path);
 
-            if (!File.Exists(path)) {
-                throw new Exception("File not found in tfsExporter_FileAdded");
+            if (!File.Exists(path))
+            {
+                throw new Exception("File not found in Tfs2SvnConverter_FileAdded");
             }
 
-            this._svnImporter.Add(path);
+            this.svnImporter.Add(path);
         }
 
-        void tfsExporter_FileEdited(int changeset, string path, string committer, string comment, DateTime date) {
-            log.Info("Editing file " + path);
+        private void Tfs2SvnConverter_FileBranched(int changeset, string path, string committer, string comment, DateTime date)
+        {
+            Log.Info("Adding branched file " + path);
+
+            if (!File.Exists(path))
+            {
+                throw new Exception("File not found in Tfs2SvnConverter_FileBranched");
+            }
+
+            this.svnImporter.Add(path);
         }
 
-        void tfsExporter_FileDeleted(int changeset, string path, string committer, string comment, DateTime date) {
-            log.Info("Deleting file " + path);
+        private void Tfs2SvnConverter_FileDeleted(int changeset, string path, string committer, string comment, DateTime date)
+        {
+            Log.Info("Deleting file " + path);
 
             if (File.Exists(path))
-                this._svnImporter.Remove(path, false);
+            {
+                this.svnImporter.Remove(path, false);
+            }
         }
 
-        void tfsExporter_FileBranched(int changeset, string path, string committer, string comment, DateTime date) {
-            log.Info("Adding branched file " + path);
-
-            if (!File.Exists(path))
-                throw new Exception("File not found in tfsExporter_FileBranched");
-
-            this._svnImporter.Add(path);
+        private void Tfs2SvnConverter_FileEdited(int changeset, string path, string committer, string comment, DateTime date)
+        {
+            Log.Info("Editing file " + path);
         }
 
-        void tfsExporter_FileUndeleted(int changeset, string path, string committer, string comment, DateTime date) {
-            log.Info("Adding undeleted file " + path);
+        private void Tfs2SvnConverter_FileRenamed(int changeset, string oldPath, string newPath, string committer, string comment, DateTime date)
+        {
+            Log.Info(string.Format("tfs2svn: Renaming file {0} to {1}", oldPath, newPath));
 
-            if (!File.Exists(path))
-                throw new Exception("File not found in tfsExporter_FileUndeleted");
-
-            this._svnImporter.Add(path);
-        }
-
-        void tfsExporter_FileRenamed(int changeset, string oldPath, string newPath, string committer, string comment, DateTime date) {
-            log.Info(String.Format("tfs2svn: Renaming file {0} to {1}", oldPath, newPath));
-
-            oldPath = FixPreviouslyRenamedFolder(oldPath);
+            oldPath = this.FixPreviouslyRenamedFolder(oldPath);
 
             if (oldPath == newPath)
-                return; //no need for a rename
+            {
+                return; // no need for a rename
+            }
 
             if (!File.Exists(oldPath))
-                throw new Exception("File error in tfsExporter_FileRenamed");
+            {
+                throw new Exception("File error in Tfs2SvnConverter_FileRenamed");
+            }
 
-            if (!File.Exists(newPath)) {
-                this._svnImporter.MoveFile(oldPath, newPath, false);
-            } else {
-                //check if no file exists with same case (i.e.: in that case the file was renamed automatically when a parent-folder was renamed)
-                if (oldPath != newPath) {
-                    if (oldPath.ToLowerInvariant() == newPath.ToLowerInvariant()) {
-                        //rename with only casing different: do a server-side rename
-                        this._svnImporter.MoveServerSide(oldPath, newPath, changeset, committer, date);
-                    } else {
-                        //this should be a file-swapping!!
-                        log.Warn(String.Format("tfsExporter_FileRenamed: rename of file '{0}' to existing file '{1}'. This is only allowed in case of a 'filename-swapping'. Please check if this was the case.", oldPath, newPath));
+            if (!File.Exists(newPath))
+            {
+                this.svnImporter.MoveFile(oldPath, newPath, false);
+            }
+            else
+            {
+                // Check if no file exists with same case (i.e.: in that case the file was renamed automatically when a parent-folder was renamed)
+                if (oldPath != newPath)
+                {
+                    if (oldPath.ToLowerInvariant() == newPath.ToLowerInvariant())
+                    {
+                        // Rename with only casing different: do a server-side rename
+                        this.svnImporter.MoveServerSide(oldPath, newPath, changeset, committer, date);
+                    }
+                    else
+                    {
+                        // This should be a file-swapping!!
+                        Log.Warn(string.Format("Tfs2SvnConverter_FileRenamed: rename of file '{0}' to existing file '{1}'. This is only allowed in case of a 'filename-swapping'. Please check if this was the case.", oldPath, newPath));
 
-                        if (fileSwapBackups.ContainsKey(newPath))
-                            throw new Exception(String.Format("Problem renaming {0} to {1}. Another file was already renamed to target.", oldPath, newPath));
+                        if (this.fileSwapBackups.ContainsKey(newPath))
+                        {
+                            throw new Exception(string.Format("Problem renaming {0} to {1}. Another file was already renamed to target.", oldPath, newPath));
+                        }
 
-                        string tempNewPath = GetBackupFilename(newPath);
+                        string tempNewPath = this.GetBackupFilename(newPath);
                         File.Copy(newPath, tempNewPath);
 
-                        if (fileSwapBackups.ContainsKey(oldPath)) {
-                            string tempOldPath = GetBackupFilename(oldPath);
+                        if (this.fileSwapBackups.ContainsKey(oldPath))
+                        {
+                            string tempOldPath = this.GetBackupFilename(oldPath);
                             File.Copy(tempOldPath, newPath, true);
-                        } else {
+                        }
+                        else
+                        {
                             File.Copy(oldPath, newPath, true);
                         }
 
-                        fileSwapBackups.Add(newPath, oldPath);
+                        this.fileSwapBackups.Add(newPath, oldPath);
                     }
                 }
             }
         }
 
-        void tfsExporter_FolderAdded(int changeset, string path, string committer, string comment, DateTime date) {
-            log.Info(String.Format("Adding folder {0}", path));
+        private void Tfs2SvnConverter_FileUndeleted(int changeset, string path, string committer, string comment, DateTime date)
+        {
+            Log.Info("Adding undeleted file " + path);
 
-            if (!Directory.Exists(path))
-                throw new Exception("Directory not found in tfsExporter_FolderAdded");
+            if (!File.Exists(path))
+            {
+                throw new Exception("File not found in Tfs2SvnConverter_FileUndeleted");
+            }
 
-            this._svnImporter.AddFolder(path);
-            //this._svnImporter.Commit(comment, committer, date, changeset);
+            this.svnImporter.Add(path);
         }
 
-        void tfsExporter_FolderDeleted(int changeset, string path, string committer, string comment, DateTime date) {
-            log.Info(String.Format("Deleting folder {0}", path));
+        private void Tfs2SvnConverter_FolderAdded(int changeset, string path, string committer, string comment, DateTime date)
+        {
+            Log.Info(string.Format("Adding folder {0}", path));
 
-            if (Directory.Exists(path) && path != _workingCopyPath) //cannot delete workingcopy root-folder
+            if (!Directory.Exists(path))
             {
-                //Try to remove the path without forcing it.  
-                try {
-                    this._svnImporter.Remove(path, true);
-                } catch (Exception ex) {
-                    this._svnImporter.CleanUp(path);
+                throw new Exception("Directory not found in Tfs2SvnConverter_FolderAdded");
+            }
 
-                    log.Info(String.Format("Could not remove the path with normal methods. \n{0}", ex.Message));
-                    log.Info(String.Format("Forcing removal of {0}", path));
-                    this._svnImporter.ForceRemove(path, true);
+            this.svnImporter.AddFolder(path);
+        }
+
+        private void Tfs2SvnConverter_FolderBranched(int changeset, string path, string committer, string comment, DateTime date)
+        {
+            Log.Info(string.Format("Adding branched folder {0}", path));
+
+            if (!Directory.Exists(path))
+            {
+                throw new Exception("Directory not found in Tfs2SvnConverter_FolderBranched");
+            }
+
+            this.svnImporter.AddFolder(path);
+        }
+
+        private void Tfs2SvnConverter_FolderDeleted(int changeset, string path, string committer, string comment, DateTime date)
+        {
+            Log.Info(string.Format("Deleting folder {0}", path));
+
+            // Cannot delete workingcopy root-folder
+            if (Directory.Exists(path) && path != this.workingCopyPath)
+            {
+                // Try to remove the path without forcing it.
+                try
+                {
+                    this.svnImporter.Remove(path, true);
                 }
-                //this._svnImporter.Commit(comment, committer, date, changeset);
+                catch (Exception ex)
+                {
+                    this.svnImporter.CleanUp(path);
+
+                    Log.Info(string.Format("Could not remove the path with normal methods. \n{0}", ex.Message));
+                    Log.Info(string.Format("Forcing removal of {0}", path));
+                    this.svnImporter.ForceRemove(path, true);
+                }
             }
         }
 
-        void tfsExporter_FolderBranched(int changeset, string path, string committer, string comment, DateTime date) {
-            log.Info(String.Format("Adding branched folder {0}", path));
+        private void Tfs2SvnConverter_FolderRenamed(int changeset, string oldPath, string newPath, string committer, string comment, DateTime date)
+        {
+            Log.Info(string.Format("tfs2svn: Renaming folder {0} to {1}", oldPath, newPath));
 
-            if (!Directory.Exists(path))
-                throw new Exception("Directory not found in tfsExporter_FolderBranched");
-
-            this._svnImporter.AddFolder(path);
-            //this._svnImporter.Commit(comment, committer, date, changeset);
-        }
-
-        void tfsExporter_FolderUndeleted(int changeset, string path, string committer, string comment, DateTime date) {
-            log.Info(String.Format("Adding undeleted folder {0}", path));
-
-            if (!Directory.Exists(path))
-                throw new Exception("Directory not found in tfsExporter_FolderUndeleted");
-
-            this._svnImporter.AddFolder(path);
-            //this._svnImporter.Commit(comment, committer, date, changeset);
-        }
-
-        void tfsExporter_FolderRenamed(int changeset, string oldPath, string newPath, string committer, string comment, DateTime date) {
-            log.Info(String.Format("tfs2svn: Renaming folder {0} to {1}", oldPath, newPath));
-
-            oldPath = FixPreviouslyRenamedFolder(oldPath);
+            oldPath = this.FixPreviouslyRenamedFolder(oldPath);
 
             if (oldPath == newPath)
-                return; //no need for a rename
+            {
+                return; // no need for a rename
+            }
 
-            if (!Directory.Exists(oldPath)) {
-                if (Directory.Exists(newPath)) {
+            if (!Directory.Exists(oldPath))
+            {
+                if (Directory.Exists(newPath))
+                {
                     // This can happen when we tried applying the current change set earlier and it
                     // failed in the middle of applying the changeset.
-                    renamedFolders.Add(oldPath, newPath);
+                    this.renamedFolders.Add(oldPath, newPath);
                     return;
-                } else {
-                    throw new Exception("Folder error in tfsExporter_FolderRenamed");
+                }
+                else
+                {
+                    throw new Exception("Folder error in Tfs2SvnConverter_FolderRenamed");
                 }
             }
 
-            //rename to an existing directory is only allowed when the casing of the folder-name was changed 
-            if (Directory.Exists(newPath) && oldPath.ToLowerInvariant() != newPath.ToLowerInvariant()) {
+            // Rename to an existing directory is only allowed when the casing of the folder-name was changed
+            if (Directory.Exists(newPath) && oldPath.ToLowerInvariant() != newPath.ToLowerInvariant())
+            {
                 // Ignore. We've seen a TFS changeset like this:
                 // 1. Folder A does exist
                 // 2. The changeset adds folder A
@@ -397,38 +483,25 @@ namespace Colyar.SourceControl.Tfs2Svn {
                 // Obviously actions 2 and 3 are in the worng order in the TFS changeset.
                 // Our fix for this is: The user will have to move the folder from A to B in svn and then we'll ignore
                 // the resulting error here when we can't execute the move.
-                renamedFolders.Add(oldPath, newPath);
+                this.renamedFolders.Add(oldPath, newPath);
                 return;
-
-                //throw new Exception("tfsExporter_FolderRenamed: renaming a folder to an already existing folder is not supported (yet)");
             }
 
-            //folder renames must be done server-side (see 'Moving files and folders' in http://tortoisesvn.net/docs/nightly/TortoiseSVN_sk/tsvn-dug-rename.html)
-            this._svnImporter.MoveServerSide(oldPath, newPath, changeset, committer, date);
-            renamedFolders.Add(oldPath, newPath);
+            // Folder renames must be done server-side (see 'Moving files and folders' in http://tortoisesvn.net/docs/nightly/TortoiseSVN_sk/tsvn-dug-rename.html)
+            this.svnImporter.MoveServerSide(oldPath, newPath, changeset, committer, date);
+            this.renamedFolders.Add(oldPath, newPath);
         }
 
-        #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
+        private void Tfs2SvnConverter_FolderUndeleted(int changeset, string path, string committer, string comment, DateTime date)
+        {
+            Log.Info(string.Format("Adding undeleted folder {0}", path));
 
-        protected virtual void Dispose(bool disposing) {
-            if (!disposedValue) {
-                if (disposing) {
-                    this._tfsClient.Dispose();
-                    this._svnImporter.Dispose();
-                }
-
-                disposedValue = true;
+            if (!Directory.Exists(path))
+            {
+                throw new Exception("Directory not found in Tfs2SvnConverter_FolderUndeleted");
             }
-        }
 
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose() {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
+            this.svnImporter.AddFolder(path);
         }
-        #endregion
-
-        #endregion
     }
 }
