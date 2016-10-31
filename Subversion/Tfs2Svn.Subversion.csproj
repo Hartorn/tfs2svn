@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.50727</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{3611479C-AD86-4B4A-AF59-82D27D026E7A}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
+    <ProjectGuid>{AD47F42D-1D9D-4C1A-B216-B82E652DEC5E}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Tfs2Svn.Winforms</RootNamespace>
-    <AssemblyName>Tfs2Svn.Winforms</AssemblyName>
+    <RootNamespace>Tfs2Svn.Subversion</RootNamespace>
+    <AssemblyName>Tfs2Svn.Subversion</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -118,7 +118,7 @@
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <DocumentationFile>bin\x86\Debug\Tfs2Svn.Winforms.xml</DocumentationFile>
+    <DocumentationFile>bin\x86\Debug\Tfs2Svn.Subversion.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>bin\x86\Release\</OutputPath>
@@ -152,80 +152,21 @@
       <HintPath>..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="SharpSvn, Version=1.9004.3900.136, Culture=neutral, PublicKeyToken=d729672594885a28, processorArchitecture=x86">
+      <HintPath>..\packages\SharpSvn.1.9-x86.1.9004.3900.136\lib\net40\SharpSvn.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="SharpSvn.UI, Version=1.9004.3900.136, Culture=neutral, PublicKeyToken=33789aa53ca44aa9, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpSvn.1.9-x86.1.9004.3900.136\lib\net40\SharpSvn.UI.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
-    <Reference Include="System.configuration" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MainFrame.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MainFrame.Designer.cs">
-      <DependentUpon>MainFrame.cs</DependentUpon>
-    </Compile>
-    <Compile Include="AboutFrame.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="AboutFrame.Designer.cs">
-      <DependentUpon>AboutFrame.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Program.cs" />
-    <Compile Include="ProgressTimeEstimator.cs" />
+    <Compile Include="SvnImporter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="MainFrame.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>MainFrame.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="AboutFrame.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>AboutFrame.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <None Include="app.config" />
-    <None Include="packages.config" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Colyar.SourceControl.Tfs2Svn\Tfs2Svn.Converter.csproj">
-      <Project>{51DEB101-123D-41F8-84B3-F62FE733477F}</Project>
-      <Name>Tfs2Svn.Converter</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Colyar.SourceControl\Tfs2Svn.Common.csproj">
-      <Project>{46B5216D-37A6-4B2C-9333-D591EFB4C08E}</Project>
-      <Name>Tfs2Svn.Common</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="..\docs\COPYING.txt">
-      <Link>docs\COPYING.txt</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\docs\README.txt">
-      <Link>docs\README.txt</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="icons\app.ico" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -243,6 +184,9 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="..\packages\StyleCop.Analyzers.1.0.0\analyzers\dotnet\cs\Newtonsoft.Json.dll" />

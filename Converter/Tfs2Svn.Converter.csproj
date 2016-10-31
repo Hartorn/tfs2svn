@@ -162,20 +162,6 @@
     <Compile Include="Tfs2SvnConverter.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Colyar.SourceControl.MicrosoftTfsClient\Tfs2Svn.TfsClient.csproj">
-      <Project>{6A457FA8-2A9F-41C4-B45C-D98DAE10BDA6}</Project>
-      <Name>Tfs2Svn.TfsClient</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Colyar.SourceControl.Subversion\Tfs2Svn.Subversion.csproj">
-      <Project>{AD47F42D-1D9D-4C1A-B216-B82E652DEC5E}</Project>
-      <Name>Tfs2Svn.Subversion</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Colyar.SourceControl\Tfs2Svn.Common.csproj">
-      <Project>{46B5216D-37A6-4B2C-9333-D591EFB4C08E}</Project>
-      <Name>Tfs2Svn.Common</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
       <Visible>False</Visible>
       <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
@@ -200,6 +186,20 @@
     <Analyzer Include="..\packages\StyleCop.Analyzers.1.0.0\analyzers\dotnet\cs\Newtonsoft.Json.dll" />
     <Analyzer Include="..\packages\StyleCop.Analyzers.1.0.0\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
     <Analyzer Include="..\packages\StyleCop.Analyzers.1.0.0\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Tfs2Svn.Common.csproj">
+      <Project>{46b5216d-37a6-4b2c-9333-d591efb4c08e}</Project>
+      <Name>Tfs2Svn.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Subversion\Tfs2Svn.Subversion.csproj">
+      <Project>{ad47f42d-1d9d-4c1a-b216-b82e652dec5e}</Project>
+      <Name>Tfs2Svn.Subversion</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TfsClient\Tfs2Svn.TfsClient.csproj">
+      <Project>{6a457fa8-2a9f-41c4-b45c-d98dae10bda6}</Project>
+      <Name>Tfs2Svn.TfsClient</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
