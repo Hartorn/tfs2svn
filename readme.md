@@ -1,12 +1,15 @@
-tfs2svn
+Tfs2Svn
 =======
 
-tfs2svn is a Windows application that converts a Team Foundation Server (TFS) repository into a Subversion (SVN) repository, preserving the history, branches, and commit information.
+Tfs2Svn is a Windows application that converts a Team Foundation Server (TFS) repository into a Subversion (SVN) repository, preserving the history, branches, and commit information.
 
-## Download
+[![Build status](https://ci.appveyor.com/api/projects/status/wh7fhilvsumcvtj1?svg=true)](https://ci.appveyor.com/project/Hartorn/tfs2svn)
 
-### 2.0
+## Installation
+Tfs2Svn is installed using a Windows Installer, just download and launch the installer.
 
-[https://github.com/Hartorn/tfs2svn/releases/download/v2.0/tfs2svn.Setup.msi](https://github.com/Hartorn/tfs2svn/releases/download/v2.0/tfs2svn.Setup.msi)
+## Downloads
+
+[Go to the release page](https://github.com/Hartorn/tfs2svn/releases)
 
 
