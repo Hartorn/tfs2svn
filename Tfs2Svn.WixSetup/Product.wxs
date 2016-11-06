@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" Name="Tfs2Svn.WixSetup" Language="1033" Version="1.0.0.0" Manufacturer="Hartorn" UpgradeCode="58b2375c-6258-4717-8ae3-94157c09425b">
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate />
+
+    <Feature Id="ProductFeature" Title="Tfs2Svn.WixSetup" Level="1">
+      <ComponentGroupRef Id="Tfs2Svn.Winforms.Binaries" />
+      <!--<ComponentGroupRef Id="ProductComponents" />-->
+    </Feature>
+  </Product>
+
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="INSTALLFOLDER" Name="Tfs2Svn" />
+      </Directory>
+    </Directory>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <!-- TODO: Remove the comments around this Component element and the ComponentRef below in order to add resources to this installer. -->
+      <Component Id="ProductComponent">
+        <!-- TODO: Insert files, registry keys, and other resources here. -->
+        <File Source="$(var.Tfs2Svn.Winforms.TargetPath)" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>

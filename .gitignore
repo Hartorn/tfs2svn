@@ -4,3 +4,5 @@
 /packages/
 */Debug/
 *.suo
+*/StyleCop.Cache
+**/*.user
